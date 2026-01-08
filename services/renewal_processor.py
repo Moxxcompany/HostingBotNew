@@ -893,9 +893,9 @@ class HostingRenewalProcessor:
                 logger.warning(f"⚠️ No cPanel username found for subscription {subscription_id}")
                 cpanel_suspension_status = None  # No username, so no tracking needed
             
-            # Calculate deletion schedule (30 days from suspension)
+            # Calculate deletion schedule (7 days from suspension - 1 week grace to renew)
             suspension_timestamp = datetime.now(timezone.utc)
-            deletion_scheduled = suspension_timestamp + timedelta(days=30)
+            deletion_scheduled = suspension_timestamp + timedelta(days=7)
             
             # Update subscription status to suspended WITH timestamps AND cPanel tracking
             await execute_update("""
@@ -1039,6 +1039,13 @@ class HostingRenewalProcessor:
                         title=format_bold(title),
                         domain=format_inline_code(domain_name),
                         amount=format_bold(format_money(amount)))
+                # Add 7-day deletion warning
+                deletion_warning = f"\n\n⚠️ Your account will be automatically deleted in 7 days if not renewed. You can still renew to restore service."
+                message = create_error_message(body + deletion_warning)
+                
+            elif status == 'deleted':
+                title = "🗑️ Hosting Account Deleted"
+                body = f"{format_bold(title)}\n\nYour hosting for {format_inline_code(domain_name)} has been permanently deleted after the 7-day grace period expired.\n\nTo restore hosting, please create a new subscription."
                 message = create_error_message(body)
                 
             else:
@@ -1111,6 +1118,122 @@ class HostingRenewalProcessor:
         except Exception as e:
             logger.error(f"❌ Error in manual renewal for subscription {subscription_id}: {e}")
             return {'status': 'error', 'reason': str(e)}
+
+    async def process_scheduled_deletions(self) -> Dict[str, Any]:
+        """
+        Process hosting subscriptions scheduled for automatic deletion.
+        Deletes cPanel accounts 7 days after suspension if not renewed.
+        Users can still renew during this 7-day window before deletion.
+        """
+        try:
+            now = datetime.now(timezone.utc)
+            
+            # Find suspended subscriptions past their deletion deadline
+            query = """
+                SELECT hs.id, hs.domain_name, hs.cpanel_username, hs.user_id,
+                       hs.deletion_scheduled_for, hs.suspended_at,
+                       u.telegram_id
+                FROM hosting_subscriptions hs
+                JOIN users u ON hs.user_id = u.id
+                WHERE hs.status = 'suspended'
+                  AND hs.deletion_scheduled_for IS NOT NULL
+                  AND hs.deletion_scheduled_for <= %s
+                ORDER BY hs.deletion_scheduled_for ASC
+            """
+            
+            subscriptions_to_delete = await execute_query(query, (now,))
+            
+            if not subscriptions_to_delete:
+                logger.debug("✅ No hosting subscriptions scheduled for deletion")
+                return {"status": "success", "deleted": 0}
+            
+            logger.info(f"🗑️ Processing {len(subscriptions_to_delete)} subscriptions for auto-deletion")
+            
+            deleted_count = 0
+            failed_count = 0
+            
+            for subscription in subscriptions_to_delete:
+                try:
+                    result = await self._delete_hosting_subscription(subscription)
+                    if result.get('success'):
+                        deleted_count += 1
+                    else:
+                        failed_count += 1
+                except Exception as e:
+                    logger.error(f"❌ Error deleting subscription {subscription['id']}: {e}")
+                    failed_count += 1
+            
+            logger.info(f"🗑️ Deletion processing complete: {deleted_count} deleted, {failed_count} failed")
+            
+            return {
+                "status": "success",
+                "deleted": deleted_count,
+                "failed": failed_count,
+                "total_processed": len(subscriptions_to_delete)
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing scheduled deletions: {e}")
+            return {"status": "error", "error": str(e)}
+
+    async def _delete_hosting_subscription(self, subscription: Dict) -> Dict[str, Any]:
+        """
+        Delete a hosting subscription and its cPanel account.
+        Called after the 7-day post-suspension grace period expires.
+        """
+        subscription_id = subscription['id']
+        domain_name = subscription['domain_name']
+        cpanel_username = subscription.get('cpanel_username')
+        telegram_id = subscription.get('telegram_id')
+        
+        logger.warning(f"🗑️ Auto-deleting subscription {subscription_id}: {domain_name} (cPanel: {cpanel_username})")
+        
+        cpanel_deleted = False
+        
+        # Delete the cPanel account if it exists
+        if cpanel_username:
+            try:
+                from services.cpanel import CPanelService
+                cpanel = CPanelService()
+                cpanel_deleted = await cpanel.terminate_account(cpanel_username)
+                if cpanel_deleted:
+                    logger.info(f"✅ cPanel account terminated: {cpanel_username}")
+                else:
+                    logger.warning(f"⚠️ cPanel termination returned False: {cpanel_username}")
+            except Exception as e:
+                logger.error(f"❌ cPanel termination error for {cpanel_username}: {e}")
+        
+        # Update subscription status to deleted
+        await execute_update("""
+            UPDATE hosting_subscriptions 
+            SET status = 'deleted',
+                deleted_at = CURRENT_TIMESTAMP,
+                deleted_by = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (subscription_id,))
+        
+        # Update cPanel account record if exists
+        await execute_update("""
+            UPDATE cpanel_accounts
+            SET status = 'terminated',
+                deleted_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE subscription_id = %s
+        """, (subscription_id,))
+        
+        # Send deletion notification to user
+        if telegram_id:
+            await self.send_renewal_notification(
+                telegram_id, 'deleted', {
+                    'domain_name': domain_name
+                }
+            )
+        
+        logger.warning(f"🗑️ Subscription {subscription_id} deleted: {domain_name} (cPanel terminated: {'✅' if cpanel_deleted else '❌'})")
+        
+        return {'success': True, 'subscription_id': subscription_id, 'cpanel_deleted': cpanel_deleted}
+
 
 class RDPRenewalProcessor:
     """
