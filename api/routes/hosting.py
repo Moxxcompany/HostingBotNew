@@ -11,7 +11,6 @@ from api.schemas.hosting import (
     OrderHostingExternalRequest,
     RenewHostingRequest,
     ResetPasswordRequest,
-    AutoRenewalSettingRequest,
     ServerInfoResponse,
     ServerLocation,
     ServerSpecifications,
@@ -882,7 +881,6 @@ async def get_hosting_subscription(
         "created_at": s['created_at'].isoformat() if s['created_at'] else None,
         "expires_at": s['next_billing_date'].isoformat() if s['next_billing_date'] else None,
         "server_ip": server_ip,
-        "auto_renew": s.get('auto_renew', True),
         "is_active": s['status'] == "active"
     }
     
@@ -941,7 +939,15 @@ async def renew_hosting(
     request: RenewHostingRequest,
     key_data: dict = Depends(get_api_key_from_header)
 ):
-    """Renew hosting subscription with automatic wallet debit"""
+    """
+    Renew hosting subscription with automatic wallet debit.
+    
+    Supports plan switching: pass optional 'plan' parameter to switch to a different plan during renewal.
+    - Omit 'plan' to renew with current plan
+    - Specify 'plan' (pro_7day or pro_30day) to switch plans
+    
+    Note: Downgrading may fail if current resource usage exceeds the new plan's limits.
+    """
     check_permission(key_data, "hosting", "write")
     user_id = key_data["user_id"]
     
@@ -949,7 +955,8 @@ async def renew_hosting(
     from database import finalize_wallet_reservation
     
     result = await execute_query("""
-        SELECT hp.plan_name, hs.next_billing_date 
+        SELECT hp.id as plan_id, hp.plan_name, hp.plan_code, hs.next_billing_date, 
+               hs.status, hs.cpanel_username
         FROM hosting_subscriptions hs
         JOIN hosting_plans hp ON hs.hosting_plan_id = hp.id
         WHERE hs.id = %s AND hs.user_id = %s
@@ -958,12 +965,67 @@ async def renew_hosting(
     if not result:
         raise ResourceNotFoundError("Hosting subscription", str(subscription_id))
     
-    plan_name = result[0]['plan_name']
+    subscription = result[0]
+    current_plan_name = subscription['plan_name']
+    current_plan_code = subscription['plan_code']
+    current_plan_id = subscription['plan_id']
+    status = subscription['status']
+    cpanel_username = subscription['cpanel_username']
     
-    # Apply 10% API discount to renewal
-    price_per_period = HOSTING_PRICES.get(plan_name)
+    if status in ['suspended', 'cancelled', 'terminated']:
+        raise BadRequestError(f"Cannot renew {status} subscription. Please contact support.")
+    
+    plan_switching = False
+    target_plan_name = current_plan_name
+    target_plan_code = current_plan_code
+    target_plan_id = current_plan_id
+    
+    if request.plan:
+        target_plan_code = request.plan
+        target_plan_result = await execute_query("""
+            SELECT id, plan_name, plan_code, disk_space_gb, bandwidth_gb FROM hosting_plans WHERE plan_code = %s
+        """, (target_plan_code,))
+        
+        if not target_plan_result:
+            raise BadRequestError(f"Invalid plan: {request.plan}. Available: pro_7day, pro_30day")
+        
+        target_plan_id = target_plan_result[0]['id']
+        target_plan_name = target_plan_result[0]['plan_name']
+        target_disk_gb = target_plan_result[0].get('disk_space_gb', 100)
+        
+        if target_plan_id != current_plan_id:
+            plan_switching = True
+            logger.info(f"📦 Plan switch requested: {current_plan_name} -> {target_plan_name}")
+            
+            current_plan_data = await execute_query("""
+                SELECT disk_space_gb FROM hosting_plans WHERE id = %s
+            """, (current_plan_id,))
+            current_disk_gb = current_plan_data[0].get('disk_space_gb', 100) if current_plan_data else 100
+            
+            is_downgrade = target_disk_gb < current_disk_gb
+            
+            if is_downgrade and status == 'active' and cpanel_username:
+                try:
+                    usage = await cpanel.get_account_usage(cpanel_username)
+                    if usage:
+                        disk_used_mb = usage.get('disk_used_mb', 0)
+                        disk_used_gb = disk_used_mb / 1024
+                        target_limit_mb = target_disk_gb * 1024
+                        
+                        if disk_used_mb > target_limit_mb * 0.9:
+                            raise BadRequestError(
+                                f"Cannot downgrade: Current disk usage ({disk_used_gb:.1f}GB) exceeds 90% of target plan limit ({target_disk_gb}GB). "
+                                f"Please reduce disk usage before downgrading.",
+                                {"current_usage_gb": round(disk_used_gb, 2), "target_limit_gb": target_disk_gb}
+                            )
+                except BadRequestError:
+                    raise
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not verify usage for downgrade check: {e}")
+    
+    price_per_period = HOSTING_PRICES.get(target_plan_name) or HOSTING_PRICES.get(target_plan_code)
     if not price_per_period:
-        raise BadRequestError(f"Invalid hosting plan: {plan_name}")
+        price_per_period = get_hosting_prices().get("pro_30day", Decimal("80.00"))
     
     total_before_discount = price_per_period * request.period
     api_discount = total_before_discount * Decimal("0.10")
@@ -979,25 +1041,34 @@ async def renew_hosting(
     hold_transaction_id = await reserve_wallet_balance(
         user_id,
         total_price,
-        f"Hosting renewal hold: subscription {subscription_id}"
+        f"Hosting {'switch & ' if plan_switching else ''}renewal: subscription {subscription_id}"
     )
     
     if not hold_transaction_id:
         raise InternalServerError("Failed to reserve wallet balance")
     
     try:
-        period_days = 7 if 'pro_7day' in plan_name else 30
+        period_days = 7 if 'pro_7day' in target_plan_code or '7' in target_plan_name else 30
         extension_days = period_days * request.period
         
-        # Build update query based on whether auto_renew is being updated
-        if request.auto_renew is not None:
+        if plan_switching:
+            whm_package = target_plan_code
+            if cpanel_username and status == 'active':
+                package_changed = await cpanel.change_package(cpanel_username, whm_package)
+                if not package_changed:
+                    logger.error(f"❌ cPanel package change failed for {cpanel_username} to {whm_package}")
+                    raise BadRequestError(
+                        f"Plan switch failed: Could not change hosting package on server. Please try again or contact support."
+                    )
+            
             await execute_update("""
                 UPDATE hosting_subscriptions
-                SET next_billing_date = next_billing_date + (%s || ' days')::interval,
-                    auto_renew = %s,
+                SET hosting_plan_id = %s,
+                    next_billing_date = next_billing_date + (%s || ' days')::interval,
                     updated_at = NOW()
                 WHERE id = %s
-            """, (extension_days, request.auto_renew, subscription_id))
+            """, (target_plan_id, extension_days, subscription_id))
+            logger.info(f"✅ Plan switched from {current_plan_name} to {target_plan_name} for subscription {subscription_id}")
         else:
             await execute_update("""
                 UPDATE hosting_subscriptions
@@ -1008,10 +1079,20 @@ async def renew_hosting(
         
         await finalize_wallet_reservation(hold_transaction_id, success=True)
         
+        is_upgrade = plan_switching and (target_plan_code == 'pro_30day' and current_plan_code == 'pro_7day')
+        is_downgrade = plan_switching and (target_plan_code == 'pro_7day' and current_plan_code == 'pro_30day')
+        
         response_data = {
             "subscription_id": subscription_id,
             "renewed": True,
             "period": request.period,
+            "extension_days": extension_days,
+            "plan": {
+                "code": target_plan_code,
+                "name": target_plan_name,
+                "switched": plan_switching,
+                "switch_type": "upgrade" if is_upgrade else ("downgrade" if is_downgrade else None)
+            },
             "pricing": {
                 "base_price_per_period": float(price_per_period),
                 "periods": request.period,
@@ -1022,13 +1103,18 @@ async def renew_hosting(
             "amount_charged": float(total_price)
         }
         
-        if request.auto_renew is not None:
-            response_data["auto_renew_updated"] = request.auto_renew
+        if plan_switching:
+            response_data["previous_plan"] = current_plan_name
         
-        return success_response(response_data, "Hosting renewed successfully with 10% API discount")
+        message = "Hosting renewed successfully with 10% API discount"
+        if plan_switching:
+            message = f"Plan switched from {current_plan_name} to {target_plan_name} and renewed with 10% API discount"
+        
+        return success_response(response_data, message)
         
     except Exception as e:
         await finalize_wallet_reservation(hold_transaction_id, success=False)
+        logger.error(f"❌ Renewal failed for subscription {subscription_id}: {e}")
         raise InternalServerError(f"Renewal failed: {str(e)}")
 
 
@@ -1036,14 +1122,19 @@ async def renew_hosting(
 async def get_renewal_price(
     subscription_id: int,
     period: int = Query(1, ge=1, le=12),
+    plan: str = Query(None, pattern="^(pro_7day|pro_30day)$", description="Optional: Get price for a different plan"),
     key_data: dict = Depends(get_api_key_from_header)
 ):
-    """Get hosting renewal price with 10% API discount"""
+    """
+    Get hosting renewal price with 10% API discount.
+    
+    Pass optional 'plan' parameter to get pricing for switching to a different plan.
+    """
     check_permission(key_data, "hosting", "read")
     user_id = key_data["user_id"]
     
     result = await execute_query("""
-        SELECT hp.plan_name
+        SELECT hp.plan_name, hp.plan_code
         FROM hosting_subscriptions hs
         JOIN hosting_plans hp ON hs.hosting_plan_id = hp.id
         WHERE hs.id = %s AND hs.user_id = %s
@@ -1052,21 +1143,125 @@ async def get_renewal_price(
     if not result:
         raise ResourceNotFoundError("Hosting subscription", str(subscription_id))
     
-    plan_name = result[0]['plan_name']
-    price_per_period = HOSTING_PRICES.get(plan_name, get_hosting_prices().get("pro_30day", Decimal("100.00")))
+    current_plan_name = result[0]['plan_name']
+    current_plan_code = result[0]['plan_code']
+    
+    target_plan_code = plan if plan else current_plan_code
+    target_plan_name = current_plan_name
+    is_switch = False
+    
+    if plan and plan != current_plan_code:
+        target_plan_result = await execute_query("""
+            SELECT plan_name FROM hosting_plans WHERE plan_code = %s
+        """, (plan,))
+        if target_plan_result:
+            target_plan_name = target_plan_result[0]['plan_name']
+            is_switch = True
+    
+    price_per_period = HOSTING_PRICES.get(target_plan_name) or HOSTING_PRICES.get(target_plan_code) or get_hosting_prices().get("pro_30day", Decimal("80.00"))
     total_before_discount = price_per_period * period
     
-    # Apply 10% API discount
     api_discount = total_before_discount * Decimal("0.10")
     total_price = total_before_discount - api_discount
     
+    period_days = 7 if 'pro_7day' in target_plan_code or '7' in target_plan_name else 30
+    
     return success_response({
         "subscription_id": subscription_id,
+        "current_plan": current_plan_name,
+        "target_plan": target_plan_name,
+        "is_plan_switch": is_switch,
         "period": period,
+        "extension_days": period_days * period,
         "price_per_period": float(price_per_period),
         "total_before_discount": float(total_before_discount),
         "api_discount": float(api_discount),
         "total_price": float(total_price)
+    })
+
+
+@router.get("/hosting/{subscription_id}/renewal-options", response_model=dict)
+async def get_renewal_options(
+    subscription_id: int,
+    key_data: dict = Depends(get_api_key_from_header)
+):
+    """
+    Get all available renewal options for a subscription.
+    
+    Returns all available plans with pricing for periods 1-6, perfect for populating a dropdown.
+    Shows which plan is currently active and pricing for both same-plan renewal and plan switching.
+    """
+    check_permission(key_data, "hosting", "read")
+    user_id = key_data["user_id"]
+    
+    result = await execute_query("""
+        SELECT hp.id as plan_id, hp.plan_name, hp.plan_code, hs.next_billing_date, hs.status
+        FROM hosting_subscriptions hs
+        JOIN hosting_plans hp ON hs.hosting_plan_id = hp.id
+        WHERE hs.id = %s AND hs.user_id = %s
+    """, (subscription_id, user_id))
+    
+    if not result:
+        raise ResourceNotFoundError("Hosting subscription", str(subscription_id))
+    
+    subscription = result[0]
+    current_plan_code = subscription['plan_code']
+    current_plan_name = subscription['plan_name']
+    
+    all_plans = await execute_query("""
+        SELECT id, plan_name, plan_code, duration_days FROM hosting_plans ORDER BY duration_days
+    """)
+    
+    current_balance = await get_user_wallet_balance_by_id(user_id)
+    
+    renewal_options = []
+    
+    for plan in all_plans:
+        plan_code = plan['plan_code']
+        plan_name = plan['plan_name']
+        duration_days = plan['duration_days']
+        is_current = plan_code == current_plan_code
+        
+        price_per_period = HOSTING_PRICES.get(plan_name) or HOSTING_PRICES.get(plan_code) or get_hosting_prices().get("pro_30day", Decimal("80.00"))
+        
+        periods = []
+        for p in range(1, 7):
+            total_before_discount = price_per_period * p
+            api_discount = total_before_discount * Decimal("0.10")
+            total_price = total_before_discount - api_discount
+            extension_days = duration_days * p
+            
+            label = f"{extension_days} days" if extension_days < 30 else f"{extension_days // 30} month{'s' if extension_days >= 60 else ''}"
+            
+            periods.append({
+                "period": p,
+                "extension_days": extension_days,
+                "label": label,
+                "price_before_discount": float(total_before_discount),
+                "api_discount": float(api_discount),
+                "total_price": float(total_price),
+                "can_afford": current_balance >= total_price
+            })
+        
+        renewal_options.append({
+            "plan_code": plan_code,
+            "plan_name": plan_name,
+            "duration_days": duration_days,
+            "is_current_plan": is_current,
+            "price_per_period": float(price_per_period),
+            "periods": periods
+        })
+    
+    return success_response({
+        "subscription_id": subscription_id,
+        "current_plan": {
+            "code": current_plan_code,
+            "name": current_plan_name
+        },
+        "next_billing_date": subscription['next_billing_date'].isoformat() if subscription['next_billing_date'] else None,
+        "wallet_balance": float(current_balance),
+        "renewal_options": renewal_options,
+        "note": "Pass plan=pro_7day or plan=pro_30day to POST /hosting/{subscription_id}/renew to switch plans"
     })
 
 
@@ -1550,72 +1745,6 @@ async def install_ssl(
     }, "SSL certificate installed successfully")
 
 
-@router.get("/hosting/{subscription_id}/auto-renewal", response_model=dict)
-async def get_auto_renewal_setting(
-    subscription_id: int,
-    key_data: dict = Depends(get_api_key_from_header)
-):
-    """Get auto-renewal setting for hosting subscription"""
-    check_permission(key_data, "hosting", "read")
-    user_id = key_data["user_id"]
-    
-    result = await execute_query("""
-        SELECT domain_name, auto_renew, updated_at
-        FROM hosting_subscriptions
-        WHERE id = %s AND user_id = %s
-    """, (subscription_id, user_id))
-    
-    if not result:
-        raise ResourceNotFoundError("Hosting subscription", str(subscription_id))
-    
-    return success_response({
-        "subscription_id": subscription_id,
-        "domain_name": result[0]['domain_name'],
-        "auto_renew": result[0]['auto_renew'],
-        "updated_at": result[0]['updated_at'].isoformat() if result[0]['updated_at'] else None
-    })
-
-
-@router.put("/hosting/{subscription_id}/auto-renewal", response_model=dict)
-async def update_auto_renewal_setting(
-    subscription_id: int,
-    request: AutoRenewalSettingRequest,
-    key_data: dict = Depends(get_api_key_from_header)
-):
-    """Update auto-renewal setting for hosting subscription"""
-    check_permission(key_data, "hosting", "write")
-    user_id = key_data["user_id"]
-    
-    # Verify ownership
-    result = await execute_query("""
-        SELECT domain_name FROM hosting_subscriptions
-        WHERE id = %s AND user_id = %s
-    """, (subscription_id, user_id))
-    
-    if not result:
-        raise ResourceNotFoundError("Hosting subscription", str(subscription_id))
-    
-    domain_name = result[0]['domain_name']
-    
-    # Update auto_renew setting
-    await execute_update("""
-        UPDATE hosting_subscriptions
-        SET auto_renew = %s, updated_at = CURRENT_TIMESTAMP
-        WHERE id = %s AND user_id = %s
-    """, (request.auto_renew, subscription_id, user_id))
-    
-    # Get updated data
-    updated = await execute_query("""
-        SELECT auto_renew, updated_at FROM hosting_subscriptions
-        WHERE id = %s
-    """, (subscription_id,))
-    
-    return success_response({
-        "subscription_id": subscription_id,
-        "domain_name": domain_name,
-        "auto_renew": updated[0]['auto_renew'],
-        "updated_at": updated[0]['updated_at'].isoformat() if updated[0]['updated_at'] else None
-    }, f"Auto-renewal {'enabled' if request.auto_renew else 'disabled'} successfully")
 
 
 @router.get("/hosting/{subscription_id}/addon-domains", response_model=dict)
