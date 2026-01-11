@@ -5142,20 +5142,141 @@ async def get_hosting_intent_by_id(intent_id: int) -> Optional[Dict]:
         return None
 
 async def cleanup_expired_hosting_intents() -> int:
-    """Clean up expired hosting provision intents"""
+    """
+    Clean up stale hosting provision intents older than 2 hours
+    
+    Handles intents stuck in pending_payment status
+    """
+    try:
+        # Clean up stale pending_payment intents older than 30 minutes
+        result = await execute_query(
+            """UPDATE hosting_provision_intents 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'pending_payment'
+               AND created_at < NOW() - INTERVAL '30 minutes'
+               RETURNING id""",
+        )
+        count = len(result) if result else 0
+        
+        if count > 0:
+            logger.info(f"🧹 Cleaned up {count} stale hosting intents")
+        return count
+    except Exception as e:
+        logger.error(f"❌ Error cleaning up expired hosting intents: {e}")
+        return 0
+
+async def cleanup_failed_hosting_orders() -> int:
+    """
+    Clean up failed hosting orders that are blocking new orders
+    
+    Handles:
+    1. payment_insufficient orders older than 15 minutes
+    2. pending orders older than 30 minutes (stuck/abandoned)
+    """
+    total_cleaned = 0
+    try:
+        # 1. Cancel payment_insufficient orders older than 15 minutes
+        result = await execute_query(
+            """UPDATE hosting_orders 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'payment_insufficient'
+               AND created_at < NOW() - INTERVAL '15 minutes'
+               RETURNING id""",
+        )
+        insufficient_count = len(result) if result else 0
+        total_cleaned += insufficient_count
+        
+        # 2. Cancel stale pending orders older than 30 minutes
+        stale_result = await execute_query(
+            """UPDATE hosting_orders 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'pending'
+               AND created_at < NOW() - INTERVAL '30 minutes'
+               RETURNING id""",
+        )
+        stale_count = len(stale_result) if stale_result else 0
+        total_cleaned += stale_count
+        
+        if total_cleaned > 0:
+            logger.info(f"🧹 Cleaned up {total_cleaned} hosting orders (insufficient: {insufficient_count}, stale: {stale_count})")
+        return total_cleaned
+    except Exception as e:
+        logger.error(f"❌ Error cleaning up failed hosting orders: {e}")
+        return 0
+
+async def cleanup_failed_domain_orders() -> int:
+    """
+    Clean up failed domain orders that are blocking new orders
+    
+    Handles:
+    1. payment_insufficient domain orders older than 15 minutes
+    2. pending domain orders older than 30 minutes (stuck/abandoned)
+    """
+    total_cleaned = 0
+    try:
+        # 1. Cancel payment_insufficient domain orders older than 15 minutes
+        result = await execute_query(
+            """UPDATE domain_orders 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'payment_insufficient'
+               AND created_at < NOW() - INTERVAL '15 minutes'
+               RETURNING id""",
+        )
+        insufficient_count = len(result) if result else 0
+        total_cleaned += insufficient_count
+        
+        # 2. Cancel stale pending domain orders older than 30 minutes
+        stale_result = await execute_query(
+            """UPDATE domain_orders 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'pending'
+               AND created_at < NOW() - INTERVAL '30 minutes'
+               RETURNING id""",
+        )
+        stale_count = len(stale_result) if stale_result else 0
+        total_cleaned += stale_count
+        
+        if total_cleaned > 0:
+            logger.info(f"🧹 Cleaned up {total_cleaned} domain orders (insufficient: {insufficient_count}, stale: {stale_count})")
+        return total_cleaned
+    except Exception as e:
+        logger.error(f"❌ Error cleaning up failed domain orders: {e}")
+        return 0
+
+async def cleanup_stale_domain_intents() -> int:
+    """
+    Clean up stale domain registration intents older than 30 minutes
+    """
     try:
         result = await execute_query(
-            """DELETE FROM hosting_provision_intents 
-               WHERE expires_at < CURRENT_TIMESTAMP 
-               AND status NOT IN ('completed', 'provisioning') 
+            """UPDATE domain_registration_intents 
+               SET status = 'cancelled', updated_at = NOW()
+               WHERE status = 'pending'
+               AND created_at < NOW() - INTERVAL '30 minutes'
                RETURNING id""",
         )
         count = len(result) if result else 0
         if count > 0:
-            logger.info(f"🧹 Cleaned up {count} expired hosting provision intents")
+            logger.info(f"🧹 Cleaned up {count} stale domain registration intents")
         return count
     except Exception as e:
-        logger.error(f"❌ Error cleaning up expired hosting intents: {e}")
+        logger.error(f"❌ Error cleaning up stale domain intents: {e}")
+        return 0
+
+async def cleanup_failed_rdp_orders() -> int:
+    """
+    Clean up stale RDP-related payment intents
+    
+    Note: rdp_orders table is a simple linking table without status.
+    RDP payment tracking is via payment_intents with order_id prefix 'rdp_'
+    """
+    try:
+        # Clean up expired RDP payment intents (handled by main payment cleanup)
+        # This function exists for API compatibility
+        # RDP server status is managed via rdp_servers.status, not rdp_orders
+        return 0
+    except Exception as e:
+        logger.error(f"❌ Error cleaning up failed RDP orders: {e}")
         return 0
 
 async def get_domain_id_by_name(domain_name: str) -> Optional[int]:
