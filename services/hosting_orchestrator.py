@@ -16,7 +16,7 @@ import logging
 import time
 import asyncio
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, List
 from database import (
     execute_query, execute_update, get_or_create_user, 
     get_hosting_intent_by_id, finalize_hosting_provisioning
@@ -474,7 +474,7 @@ class HostingBundleOrchestrator:
                     logger.warning(f"⚠️ DNS A record update failed for {domain_name}: {dns_update_result.get('error')}")
                     # Continue with success since hosting is working
             elif not needs_domain_registration:
-                # Existing domain workflow: Create Cloudflare zone + Update A record
+                # Existing domain workflow: Create Cloudflare zone + Update A record + Ensure nameservers
                 logger.info(f"🔄 Phase 2A: Creating Cloudflare zone for existing domain - {domain_name}")
                 
                 # Create Cloudflare zone (if doesn't exist)
@@ -485,13 +485,30 @@ class HostingBundleOrchestrator:
                     # Continue without zone - hosting still works
                     zone_result = None
                 
-                logger.info(f"🔄 Phase 2B: Updating DNS A record with server IP for existing domain - {domain_name}")
+                # Phase 2B: Ensure domain is using Cloudflare nameservers (auto-update if possible)
+                logger.info(f"🔄 Phase 2B: Ensuring Cloudflare nameservers for existing domain - {domain_name}")
+                ns_result = await self._ensure_cloudflare_nameservers(
+                    domain_name, 
+                    user_id,
+                    zone_result.get('nameservers') if zone_result else None
+                )
+                nameserver_status = ns_result.get('status', 'unknown')
+                if nameserver_status == 'auto_updated':
+                    logger.info(f"✅ Nameservers auto-updated for {domain_name}")
+                elif nameserver_status == 'already_correct':
+                    logger.info(f"✅ Nameservers already correct for {domain_name}")
+                elif nameserver_status == 'manual_required':
+                    logger.warning(f"⚠️ Manual nameserver update required for {domain_name}: {ns_result.get('message')}")
+                
+                logger.info(f"🔄 Phase 2C: Updating DNS A record with server IP for existing domain - {domain_name}")
                 
                 # Create domain_result equivalent for existing domains with zone data
                 domain_result_for_existing = {
                     'zone_data': zone_result if zone_result and zone_result.get('success') else None,
                     'domain_name': domain_name,
-                    'nameservers': zone_result.get('nameservers', []) if zone_result and zone_result.get('success') else []
+                    'nameservers': zone_result.get('nameservers', []) if zone_result and zone_result.get('success') else [],
+                    'nameserver_status': nameserver_status,
+                    'nameserver_message': ns_result.get('message', '')
                 }
                 
                 dns_update_result = await self._update_dns_with_server_ip(
@@ -1235,6 +1252,100 @@ class HostingBundleOrchestrator:
                 'error': str(e)
             }
 
+    async def _ensure_cloudflare_nameservers(
+        self,
+        domain_name: str,
+        user_id: int,
+        cloudflare_nameservers: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Ensure domain is using Cloudflare nameservers.
+        
+        Shared helper used by both bot and API flows:
+        1. Fetches Cloudflare NS if not provided
+        2. Checks current domain nameservers via OpenProvider
+        3. Auto-updates if not already using Cloudflare
+        4. Returns status for user notification
+        
+        Returns:
+            Dict with:
+            - status: 'auto_updated' | 'already_correct' | 'manual_required' | 'not_our_domain' | 'error'
+            - message: User-friendly message
+            - nameservers: Cloudflare nameservers (for manual update instructions)
+        """
+        try:
+            from services.cloudflare import cloudflare
+            from services.openprovider import OpenProviderService
+            
+            openprovider = OpenProviderService()
+            
+            if not cloudflare_nameservers:
+                cloudflare_nameservers = await cloudflare.get_account_nameservers()
+            
+            if not cloudflare_nameservers:
+                logger.warning(f"⚠️ Could not fetch Cloudflare nameservers for {domain_name}")
+                return {
+                    'status': 'error',
+                    'message': 'Could not fetch Cloudflare nameservers',
+                    'nameservers': []
+                }
+            
+            domain_details = await openprovider.get_domain_details(domain_name)
+            
+            if not domain_details:
+                logger.info(f"ℹ️ Domain {domain_name} not found in OpenProvider - external registrar")
+                return {
+                    'status': 'manual_required',
+                    'message': f'Please update nameservers at your registrar to: {", ".join(cloudflare_nameservers)}',
+                    'nameservers': cloudflare_nameservers,
+                    'reason': 'not_our_domain'
+                }
+            
+            ns_data = domain_details.get('name_servers', [])
+            current_nameservers = [ns.get('name', '').lower() for ns in ns_data if ns.get('name')]
+            
+            cf_ns_lower = [ns.lower() for ns in cloudflare_nameservers]
+            already_using_cloudflare = all(ns in cf_ns_lower for ns in current_nameservers) if current_nameservers else False
+            
+            if already_using_cloudflare:
+                logger.info(f"✅ Domain {domain_name} already using Cloudflare nameservers")
+                return {
+                    'status': 'already_correct',
+                    'message': 'Nameservers already configured correctly',
+                    'nameservers': cloudflare_nameservers
+                }
+            
+            logger.info(f"🔄 Auto-updating nameservers for {domain_name} to Cloudflare")
+            ns_update_result = await openprovider.update_nameservers(
+                domain_name, 
+                cloudflare_nameservers
+            )
+            
+            if ns_update_result and ns_update_result.get('success'):
+                logger.info(f"✅ Nameservers updated for {domain_name}")
+                return {
+                    'status': 'auto_updated',
+                    'message': 'Nameservers automatically updated to Cloudflare',
+                    'nameservers': cloudflare_nameservers
+                }
+            else:
+                error_msg = ns_update_result.get('error', 'Unknown error') if ns_update_result else 'Update failed'
+                logger.warning(f"⚠️ Nameserver update failed for {domain_name}: {error_msg}")
+                return {
+                    'status': 'manual_required',
+                    'message': f'Auto-update failed. Please update nameservers manually to: {", ".join(cloudflare_nameservers)}',
+                    'nameservers': cloudflare_nameservers,
+                    'error': error_msg
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Exception ensuring Cloudflare nameservers for {domain_name}: {e}")
+            return {
+                'status': 'error',
+                'message': f'Nameserver check failed: {str(e)}',
+                'nameservers': cloudflare_nameservers or []
+            }
+
     async def _update_dns_with_server_ip(
         self, 
         domain_name: str, 
@@ -1736,35 +1847,18 @@ class HostingBundleOrchestrator:
             
             provisioning_success = hosting_result.get('success', False)
             
-            # Step 3: Update nameservers to Cloudflare if not already configured
+            # Step 3: Update nameservers to Cloudflare if not already configured (use shared helper)
+            ns_result = None
             if provisioning_success:
                 try:
-                    from services.cloudflare import cloudflare
-                    from services.openprovider import optimized_openprovider
-                    
-                    cloudflare_nameservers = await cloudflare.get_account_nameservers()
-                    
-                    domain_details = await optimized_openprovider.get_domain_details(domain_name)
-                    current_nameservers = []
-                    if domain_details:
-                        ns_data = domain_details.get('name_servers', [])
-                        current_nameservers = [ns.get('name', '').lower() for ns in ns_data if ns.get('name')]
-                    
-                    cf_ns_lower = [ns.lower() for ns in cloudflare_nameservers]
-                    already_using_cloudflare = all(ns in cf_ns_lower for ns in current_nameservers) if current_nameservers else False
-                    
-                    if not already_using_cloudflare:
-                        logger.info(f"🔄 Auto-updating nameservers for {domain_name} to Cloudflare")
-                        ns_update_result = await optimized_openprovider.update_nameservers(
-                            domain_name, 
-                            cloudflare_nameservers
-                        )
-                        if ns_update_result and ns_update_result.get('success'):
-                            logger.info(f"✅ Nameservers updated for {domain_name}")
-                        else:
-                            logger.warning(f"⚠️ Nameserver update failed for {domain_name}: {ns_update_result}")
-                    else:
-                        logger.info(f"✅ Domain {domain_name} already using Cloudflare nameservers")
+                    ns_result = await self._ensure_cloudflare_nameservers(domain_name, user_id)
+                    ns_status = ns_result.get('status', 'unknown')
+                    if ns_status == 'auto_updated':
+                        logger.info(f"✅ API: Nameservers auto-updated for {domain_name}")
+                    elif ns_status == 'already_correct':
+                        logger.info(f"✅ API: Nameservers already correct for {domain_name}")
+                    elif ns_status == 'manual_required':
+                        logger.warning(f"⚠️ API: Manual nameserver update required for {domain_name}")
                 except Exception as ns_error:
                     logger.warning(f"⚠️ Nameserver update failed but continuing: {ns_error}")
             
