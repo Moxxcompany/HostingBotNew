@@ -1898,9 +1898,9 @@ async def _process_hosting_payment(order_id: str, payment_details: Dict[str, Any
         expected_amt = None
         
         # Try multiple identifiers to find the order in hosting_orders (authoritative source)
-        # Method 1: By ID or blockbee_order_id
+        # Method 1: By ID or blockbee_order_id or external_order_id
         hosting_order_check = await exec_q(
-            "SELECT expected_amount, status FROM hosting_orders WHERE id = %s OR blockbee_order_id = %s OR dynopay_reference = %s LIMIT 1",
+            "SELECT expected_amount, status FROM hosting_orders WHERE id = %s OR blockbee_order_id = %s OR external_order_id = %s LIMIT 1",
             (integer_order_id, order_id, order_id)
         )
         
