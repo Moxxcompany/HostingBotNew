@@ -223,37 +223,36 @@ class ExchangeRateService:
             return None
     
     async def _fetch_from_fastforex_api(self, from_currency: str, to_currency: str) -> Optional[Decimal]:
-        """Fetch rate from FastForex API with optimized timeout"""
+        """Fetch rate from FastForex API with optimized timeout and internal caching"""
         if not self.fastforex_api_key:
             return None
             
+        # Optimization: Use the dedicated FastForexService which has its own batch caching
+        from services.fastforex import fastforex_service
+        
         try:
-            # PERFORMANCE FIX: Reduce timeout from 10s to 3s for webhook processing
+            # Try to get from FastForexService cache first (non-blocking)
+            rate_val, source = await fastforex_service.fetch_cached_rate(to_currency, from_currency)
+            if rate_val:
+                return to_decimal(rate_val, "fastforex_rate")
+                
+            # If not in cache, fallback to individual fetch (already has 3s timeout)
+            # This handles cases where a specific pair isn't in the pre-warmed list
             timeout = httpx.Timeout(3.0, connect=1.5)
             url = f"{self.fastforex_api_url}/fetch-one?from={from_currency}&to={to_currency}&api_key={self.fastforex_api_key}"
             
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.get(url)
                 response.raise_for_status()
-                
                 data = response.json()
                 
-                if 'result' not in data or to_currency not in data['result']:
-                    logger.warning(f"⚠️ FastForex API: No rate found for {from_currency}/{to_currency}")
-                    return None
-                
-                rate = to_decimal(data['result'][to_currency], "exchange_rate")
-                
-                # Validate rate bounds
-                if not self._validate_rate_bounds(from_currency, to_currency, rate):
-                    logger.warning(f"⚠️ FastForex rate {rate:.6f} for {from_currency}/{to_currency} outside expected bounds")
-                    return None
-                
-                logger.info(f"✅ FastForex: {from_currency}/{to_currency} = {rate:.6f}")
-                return rate
-                
+                if 'result' in data and to_currency in data['result']:
+                    rate = to_decimal(data['result'][to_currency], "exchange_rate")
+                    if self._validate_rate_bounds(from_currency, to_currency, rate):
+                        return rate
+            return None
         except Exception as e:
-            logger.warning(f"⚠️ FastForex API failed: {e}")
+            logger.warning(f"⚠️ FastForex API optimization failed: {e}")
             return None
     
     async def _fetch_crypto_to_usd_rate(self, crypto_currency: str) -> Optional[Decimal]:
