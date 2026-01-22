@@ -47,11 +47,14 @@ def get_hosting_prices():
     """Get hosting prices from environment variables"""
     plan_7_price = Decimal(os.environ.get('HOSTING_PLAN_7_DAYS_PRICE', '40.00'))
     plan_30_price = Decimal(os.environ.get('HOSTING_PLAN_30_DAYS_PRICE', '80.00'))
+    plan_annual_price = Decimal(os.environ.get('HOSTING_PLAN_ANNUAL_PRICE', '700.00'))
     return {
         "pro_7day": plan_7_price,
         "pro_30day": plan_30_price,
+        "pro_annual": plan_annual_price,
         "Pro 7 Days": plan_7_price,
-        "Pro 30 Days": plan_30_price
+        "Pro 30 Days": plan_30_price,
+        "Pro Annual": plan_annual_price
     }
 
 HOSTING_PRICES = get_hosting_prices()
@@ -64,7 +67,11 @@ async def get_hosting_plans(
     """Get available hosting plans"""
     check_permission(key_data, "hosting", "read")
     
-    plans = cpanel.get_hosting_plans()
+    plans = [
+        {"id": "pro_7day", "name": "Pro 7 Days", "price": float(HOSTING_PRICES["pro_7day"]), "billing": "7 days"},
+        {"id": "pro_30day", "name": "Pro 30 Days", "price": float(HOSTING_PRICES["pro_30day"]), "billing": "30 days"},
+        {"id": "pro_annual", "name": "Pro Annual", "price": float(HOSTING_PRICES["pro_annual"]), "billing": "yearly"}
+    ]
     return success_response({"plans": plans})
 
 
@@ -272,7 +279,7 @@ async def get_server_info(
 
 @router.get("/hosting/calculate-price", response_model=dict)
 async def calculate_hosting_price(
-    plan: str = Query(..., regex="^(pro_7day|pro_30day)$"),
+    plan: str = Query(..., regex="^(pro_7day|pro_30day|pro_annual)$"),
     period: int = Query(1, ge=1, le=12),
     key_data: dict = Depends(get_api_key_from_header)
 ):
@@ -343,7 +350,8 @@ async def unified_order_hosting(
     # Map API plan names to database plan names
     plan_name_map = {
         "pro_7day": "Pro 7 Days",
-        "pro_30day": "Pro 30 Days"
+        "pro_30day": "Pro 30 Days",
+        "pro_annual": "Pro Annual"
     }
     db_plan_name = plan_name_map.get(request.plan, request.plan)
     
@@ -996,7 +1004,7 @@ async def renew_hosting(
         """, (target_plan_code,))
         
         if not target_plan_result:
-            raise BadRequestError(f"Invalid plan: {request.plan}. Available: pro_7day, pro_30day")
+            raise BadRequestError(f"Invalid plan: {request.plan}. Available: pro_7day, pro_30day, pro_annual")
         
         target_plan_id = target_plan_result[0]['id']
         target_plan_name = target_plan_result[0]['plan_name']
@@ -1057,7 +1065,13 @@ async def renew_hosting(
         raise InternalServerError("Failed to reserve wallet balance")
     
     try:
-        period_days = 7 if 'pro_7day' in target_plan_code or '7' in target_plan_name else 30
+        if 'pro_7day' in target_plan_code or '7' in target_plan_name:
+            period_days = 7
+        elif 'pro_annual' in target_plan_code or 'Annual' in target_plan_name:
+            period_days = 365
+        else:
+            period_days = 30
+            
         extension_days = period_days * request.period
         
         # Handle unsuspension for suspended accounts
@@ -1170,7 +1184,7 @@ async def renew_hosting(
 async def get_renewal_price(
     subscription_id: int,
     period: int = Query(1, ge=1, le=12),
-    plan: str = Query(None, pattern="^(pro_7day|pro_30day)$", description="Optional: Get price for a different plan"),
+    plan: str = Query(None, pattern="^(pro_7day|pro_30day|pro_annual)$", description="Optional: Get price for a different plan"),
     key_data: dict = Depends(get_api_key_from_header)
 ):
     """
@@ -1212,7 +1226,12 @@ async def get_renewal_price(
     api_discount = total_before_discount * Decimal("0.10")
     total_price = total_before_discount - api_discount
     
-    period_days = 7 if 'pro_7day' in target_plan_code or '7' in target_plan_name else 30
+    if 'pro_7day' in target_plan_code or '7' in target_plan_name:
+        period_days = 7
+    elif 'pro_annual' in target_plan_code or 'Annual' in target_plan_name:
+        period_days = 365
+    else:
+        period_days = 30
     
     return success_response({
         "subscription_id": subscription_id,
