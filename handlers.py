@@ -11737,13 +11737,19 @@ async def handle_dns_wizard_callback(query, context, callback_data):
             # CRITICAL FIX: If we just set the name to custom, we need to handle it in continue_mx_record_wizard
             # The current continue_mx_record_wizard handles 'name' == 'custom' by showing the input prompt
             # but we need to ensure the routing happens correctly.
-        
-        # Store bot message ID for later editing
-        if hasattr(query, 'message') and query.message:
-            wizard_state['bot_message_id'] = query.message.message_id
-        
-        # Update context with modified state
-        context.user_data['dns_wizard'] = wizard_state
+            if field == "name" and value == "custom":
+                logger.info(f"MX Wizard: User chose custom subdomain, setting expectation flag")
+                context.user_data['expecting_custom_subdomain_mx'] = {
+                    'domain': domain,
+                    'wizard_state': wizard_state
+                }
+            
+            # Ensure bot_message_id is preserved for editing
+            if hasattr(query, 'message') and query.message:
+                wizard_state['bot_message_id'] = query.message.message_id
+            
+            # Store everything back to context
+            context.user_data['dns_wizard'] = wizard_state
         
         # Continue to next step based on record type
         if record_type == "A":
@@ -12546,6 +12552,8 @@ async def continue_mx_record_wizard(query, context, wizard_state):
     domain = wizard_state['domain']
     data = wizard_state['data']
     
+    logger.info(f"Entering continue_mx_record_wizard for domain {domain}, data keys: {list(data.keys())}")
+    
     if 'name' not in data:
         # Step 1: Dynamic Name Selection for MX Record
         # Get Cloudflare zone to check existing records
@@ -12582,7 +12590,7 @@ async def continue_mx_record_wizard(query, context, wizard_state):
         # Add "Custom" button to allow user-defined subdomains for MX
         keyboard.append([InlineKeyboardButton(t("buttons.custom_subdomain", user_lang), callback_data=f"dns_wizard:{domain}:MX:name:custom")])
         keyboard.append([InlineKeyboardButton(t("buttons.back", user_lang), callback_data=f"dns:{domain}:add")])
-    elif data.get('name') == 'custom':
+    elif data.get('name') == 'custom' and not data.get('custom_name_entered'):
         # Custom subdomain input prompt for MX
         message = f"""
 ✏️ <b>{t('dns_wizard.custom_subdomain_title', user_lang, domain=domain)}</b>
@@ -12606,6 +12614,7 @@ async def continue_mx_record_wizard(query, context, wizard_state):
             'domain': domain,
             'wizard_state': wizard_state
         }
+        logger.info(f"MX Wizard: Prompted for custom subdomain for user {user.id}")
         return
     elif 'server' not in data:
         # Step 2: Mail Server
@@ -14641,6 +14650,7 @@ async def handle_custom_subdomain_mx_input(update, context, subdomain_name, cust
         
         # Update wizard state with validated custom subdomain
         wizard_state['data']['name'] = subdomain_name
+        wizard_state['data']['custom_name_entered'] = True
         context.user_data['dns_wizard'] = wizard_state
         
         # Clear custom subdomain context
