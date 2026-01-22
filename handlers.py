@@ -11710,16 +11710,18 @@ async def handle_dns_wizard_callback(query, context, callback_data):
                 del wizard_state['data']['name']
             elif field == "ttl" and 'target' in wizard_state['data']:
                 del wizard_state['data']['target']
-            # MX Record back navigation
-            elif field == "name" and record_type == "MX":
-                # Going back from MX name step - clear wizard completely  
-                wizard_state['data'] = {}
-            elif field == "server" and 'name' in wizard_state['data']:
-                del wizard_state['data']['name']
-            elif field == "priority" and 'server' in wizard_state['data']:
-                del wizard_state['data']['server']
-            elif field == "ttl" and 'priority' in wizard_state['data']:
-                del wizard_state['data']['priority']
+        # MX Record back navigation
+        elif field == "name" and record_type == "MX":
+            # Going back from MX name step - clear wizard completely  
+            wizard_state['data'] = {}
+        elif field == "server" and 'name' in wizard_state['data']:
+            del wizard_state['data']['name']
+        elif field == "priority" and 'server' in wizard_state['data']:
+            del wizard_state['data']['server']
+        elif field == "ttl" and 'priority' in wizard_state['data']:
+            del wizard_state['data']['priority']
+        elif field == "create" and 'ttl' in wizard_state['data']:
+            del wizard_state['data']['ttl']
             
             # Clear custom subdomain input flags on back navigation
             clear_dns_wizard_custom_subdomain_state(context)
@@ -12643,12 +12645,15 @@ async def continue_mx_record_wizard(query, context, wizard_state):
         # Step 5: Confirmation
         await show_mx_record_confirmation(query, wizard_state)
         return
-    
+
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
+
+    # Use HTML parse mode for better formatting
+    parse_mode = ParseMode.HTML
+
     # Prevent "Message is not modified" errors by checking current content
     try:
-        await safe_edit_message(query, message, reply_markup=reply_markup)
+        await safe_edit_message(query, message, reply_markup=reply_markup, parse_mode=parse_mode)
     except Exception as e:
         if "Message is not modified" in str(e):
             # Message content is identical, just answer the callback
