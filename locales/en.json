@@ -85,6 +85,7 @@
     "username": "Username:",
     "password": "Password:",
     "url": "URL:",
+    "name": "Name:",
     "server": "Server:",
     "unknown": "Unknown",
     "not_assigned": "Not assigned",
