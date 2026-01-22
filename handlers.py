@@ -11742,6 +11742,15 @@ async def handle_dns_wizard_callback(query, context, callback_data):
         elif record_type == "TXT":
             await continue_txt_record_wizard(query, context, wizard_state)
         elif record_type == "MX":
+            # For MX priority field, we need to handle it before continuing
+            if field == "priority":
+                try:
+                    # Priority is already stored in wizard_state['data']['priority']
+                    # We just need to make sure it's an integer
+                    wizard_state['data']['priority'] = int(value)
+                    context.user_data['dns_wizard'] = wizard_state
+                except (ValueError, TypeError):
+                    logger.warning(f"Invalid priority value in MX wizard: {value}")
             await continue_mx_record_wizard(query, context, wizard_state)
         else:
             await safe_edit_message(query, create_error_message("Unknown record type"))
@@ -12610,6 +12619,8 @@ async def continue_mx_record_wizard(query, context, wizard_state):
             [InlineKeyboardButton(t("buttons.priority_10", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:10")],
             [InlineKeyboardButton(t("buttons.priority_20", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:20"),
              InlineKeyboardButton(t("buttons.priority_30", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:30")],
+            [InlineKeyboardButton(t("buttons.priority_0", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:0"),
+             InlineKeyboardButton(t("buttons.priority_50", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:50")],
             [InlineKeyboardButton(t("buttons.back", user_lang), callback_data=f"dns_wizard:{domain}:MX:server:back")]
         ]
     elif 'ttl' not in data:
