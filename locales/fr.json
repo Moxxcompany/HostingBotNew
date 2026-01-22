@@ -41,6 +41,7 @@
     "username": "Nom d'utilisateur :",
     "password": "Mot de passe :",
     "url": "URL :",
+    "name": "Nom :",
     "server": "Serveur :",
     "unknown": "Inconnu",
     "not_assigned": "Non assigné",
