@@ -11731,27 +11731,32 @@ async def handle_dns_wizard_callback(query, context, callback_data):
             # Clear custom subdomain input flags on back navigation
             clear_dns_wizard_custom_subdomain_state(context)
         else:
-            # Store the field value
+            # Initialize data if missing
+            if 'data' not in wizard_state:
+                wizard_state['data'] = {}
+            
+            # CRITICAL: Store the field value directly in the source object
             wizard_state['data'][field] = value
             
-            # CRITICAL FIX: If we just set the name to custom, we need to handle it in continue_mx_record_wizard
-            # The current continue_mx_record_wizard handles 'name' == 'custom' by showing the input prompt
-            # but we need to ensure the routing happens correctly.
-            if field == "name" and value == "custom":
-                logger.info(f"MX Wizard: User chose custom subdomain, setting expectation flag")
-                context.user_data['expecting_custom_subdomain_mx'] = {
-                    'domain': domain,
-                    'wizard_state': wizard_state
-                }
+            # Log exact assignment
+            logger.info(f"DNS Wizard: Set {field} = {value} in wizard_state['data']")
             
             # Ensure bot_message_id is preserved for editing
             if hasattr(query, 'message') and query.message:
                 wizard_state['bot_message_id'] = query.message.message_id
             
-            # Store everything back to context
+            # CRITICAL FIX: Force update the reference in context.user_data
             context.user_data['dns_wizard'] = wizard_state
+            
+            # Log state update for debugging
+            logger.info(f"Wizard state persisted to user_data: {context.user_data['dns_wizard'].get('data')}")
+            
+            # Ensure local record_type is updated from the state
+            record_type = wizard_state.get('type', record_type)
         
         # Continue to next step based on record type
+        logger.info(f"DNS Wizard: Moving to continuation for {record_type} with data {wizard_state.get('data')}")
+        
         if record_type == "A":
             await continue_a_record_wizard(query, context, wizard_state)
         elif record_type == "CNAME":
@@ -11762,15 +11767,17 @@ async def handle_dns_wizard_callback(query, context, callback_data):
             # For MX priority field, we need to handle it before continuing
             if field == "priority":
                 try:
-                    # Priority is already stored in wizard_state['data']['priority']
-                    # We just need to make sure it's an integer
                     wizard_state['data']['priority'] = int(value)
                     context.user_data['dns_wizard'] = wizard_state
                 except (ValueError, TypeError):
                     logger.warning(f"Invalid priority value in MX wizard: {value}")
-            await continue_mx_record_wizard(query, context, wizard_state)
+            
+            # Pass the most current state directly
+            current_state = context.user_data.get('dns_wizard', wizard_state)
+            logger.info(f"MX Wizard transition - data: {current_state.get('data')}")
+            await continue_mx_record_wizard(query, context, current_state)
         else:
-            await safe_edit_message(query, create_error_message("Unknown record type"))
+            await safe_edit_message(query, create_error_message(f"Unknown record type: {record_type}"))
             
     except Exception as e:
         logger.error(f"Error in DNS wizard callback: {e}")
@@ -12549,13 +12556,26 @@ async def continue_mx_record_wizard(query, context, wizard_state):
     user = query.from_user
     user_lang = await resolve_user_language(user.id, user.language_code if hasattr(user, 'language_code') else None)
     
+    # CRITICAL REFRESH: Always use the state from context.user_data if it exists
+    # This prevents the local variable 'wizard_state' from being stale
+    if 'dns_wizard' in context.user_data:
+        context_state = context.user_data['dns_wizard']
+        # Verify it's the correct wizard session
+        if context_state.get('domain') == wizard_state.get('domain') and context_state.get('type') == 'MX':
+            wizard_state = context_state
+            logger.info(f"MX Wizard: Refreshed state from context.user_data. Data now: {wizard_state.get('data')}")
+
     domain = wizard_state['domain']
-    data = wizard_state['data']
+    data = wizard_state.get('data', {})
     
-    logger.info(f"Entering continue_mx_record_wizard for domain {domain}, data keys: {list(data.keys())}")
+    logger.info(f"Entering continue_mx_record_wizard for domain {domain}, data: {data}")
     
-    if 'name' not in data:
-        # Step 1: Dynamic Name Selection for MX Record
+    # Step 1: Dynamic Name Selection for MX Record
+    # Check if 'name' is in data and not empty
+    has_name = 'name' in data and data.get('name') is not None and str(data.get('name', '')).strip() != ''
+    
+    if not has_name:
+        logger.info(f"MX Wizard: Step 1 (Name Selection) - Data: {data}")
         # Get Cloudflare zone to check existing records
         cf_zone = await get_cloudflare_zone(domain)
         if not cf_zone:
