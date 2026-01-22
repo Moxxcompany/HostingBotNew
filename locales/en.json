@@ -86,6 +86,7 @@
     "password": "Password:",
     "url": "URL:",
     "name": "Name:",
+    "priority": "Priority:",
     "server": "Server:",
     "unknown": "Unknown",
     "not_assigned": "Not assigned",
