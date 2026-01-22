@@ -68,9 +68,16 @@ async def get_hosting_plans(
     check_permission(key_data, "hosting", "read")
     
     plans = [
-        {"id": "pro_7day", "name": "Pro 7 Days", "price": float(HOSTING_PRICES["pro_7day"]), "billing": "7 days"},
-        {"id": "pro_30day", "name": "Pro 30 Days", "price": float(HOSTING_PRICES["pro_30day"]), "billing": "30 days"},
-        {"id": "pro_annual", "name": "Pro Annual", "price": float(HOSTING_PRICES["pro_annual"]), "billing": "yearly"}
+        {"id": "pro_7day", "name": "Pro 7 Days", "price": float(HOSTING_PRICES["pro_7day"]), "billing": "7 days", "savings_percentage": 0.0, "savings_description": ""},
+        {"id": "pro_30day", "name": "Pro 30 Days", "price": float(HOSTING_PRICES["pro_30day"]), "billing": "30 days", "savings_percentage": 0.0, "savings_description": ""},
+        {
+            "id": "pro_annual", 
+            "name": "Pro Annual", 
+            "price": float(HOSTING_PRICES["pro_annual"]), 
+            "billing": "yearly",
+            "savings_percentage": 27.0,
+            "savings_description": "Save 27% compared to monthly"
+        }
     ]
     return success_response({"plans": plans})
 
