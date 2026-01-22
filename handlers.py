@@ -12614,15 +12614,9 @@ async def continue_mx_record_wizard(query, context, wizard_state):
     elif 'server' not in data:
         # Step 2: Mail Server
         name_display = data['name'] if data['name'] != '@' else domain
-        message = f"""
-📧 Add MX Record (2/4): {domain}
-
-Name: {escape_content_for_display(name_display, mode="summary")[0]}
-
-Enter the mail server this MX record should point to.
-
-Enter full hostname of your mail server.
-"""
+        message = f"📧 {t('dns_wizard.mx_record_title', user_lang, step=2, domain=domain)}\n\n" \
+                  f"{t('common_labels.name', user_lang)} {escape_content_for_display(name_display, mode='summary')[0]}\n\n" \
+                  f"{t('dns_wizard.enter_mail_server', user_lang)}"
         keyboard = [
             [InlineKeyboardButton(btn_t("use_mail_domain", user_lang, domain=domain), callback_data=f"dns_wizard:{domain}:MX:server:mail.{domain}")],
             [InlineKeyboardButton(t("buttons.use_google_workspace", user_lang), callback_data=f"dns_wizard:{domain}:MX:server:aspmx.l.google.com")],
@@ -12632,19 +12626,10 @@ Enter full hostname of your mail server.
         # Step 3: Priority
         name_display = data['name'] if data['name'] != '@' else domain
         server_preview = escape_content_for_display(data['server'], mode="summary")
-        message = f"""
-📧 Add MX Record (3/4): {domain}
-
-Name: {escape_content_for_display(name_display, mode="summary")[0]}
-Server: {server_preview[0] if isinstance(server_preview, tuple) else server_preview}
-
-Select priority for this MX record:
-
-Lower numbers = higher priority
-• 10 = Primary mail server
-• 20 = Secondary mail server  
-• 30 = Backup mail server
-"""
+        message = f"📧 {t('dns_wizard.mx_record_title', user_lang, step=3, domain=domain)}\n\n" \
+                  f"{t('common_labels.name', user_lang)} {escape_content_for_display(name_display, mode='summary')[0]}\n" \
+                  f"{t('common_labels.server', user_lang)} {server_preview[0] if isinstance(server_preview, tuple) else server_preview}\n\n" \
+                  f"{t('dns_wizard.select_priority', user_lang)}"
         keyboard = [
             [InlineKeyboardButton(t("buttons.priority_10", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:10")],
             [InlineKeyboardButton(t("buttons.priority_20", user_lang), callback_data=f"dns_wizard:{domain}:MX:priority:20"),
@@ -12655,15 +12640,11 @@ Lower numbers = higher priority
         # Step 4: TTL
         name_display = data['name'] if data['name'] != '@' else domain
         server_preview = escape_content_for_display(data['server'], mode="summary")
-        message = f"""
-📧 Add MX Record (4/4): {domain}
-
-Name: {escape_content_for_display(name_display, mode="summary")[0]}
-Server: {server_preview[0] if isinstance(server_preview, tuple) else server_preview}
-Priority: {data['priority']}
-
-Select TTL (Time To Live):
-"""
+        message = f"📧 {t('dns_wizard.mx_record_title', user_lang, step=4, domain=domain)}\n\n" \
+                  f"{t('common_labels.name', user_lang)} {escape_content_for_display(name_display, mode='summary')[0]}\n" \
+                  f"{t('common_labels.server', user_lang)} {server_preview[0] if isinstance(server_preview, tuple) else server_preview}\n" \
+                  f"{t('common_labels.priority', user_lang)} {data['priority']}\n\n" \
+                  f"{t('dns_wizard.select_ttl', user_lang)}"
         keyboard = [
             [InlineKeyboardButton(t("buttons.auto_recommended_label", user_lang), callback_data=f"dns_wizard:{domain}:MX:ttl:1")],
             [InlineKeyboardButton(t("buttons.5_minutes_label", user_lang), callback_data=f"dns_wizard:{domain}:MX:ttl:300")],
