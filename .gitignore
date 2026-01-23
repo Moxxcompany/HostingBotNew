@@ -82,3 +82,7 @@ tests/
 
 # Git metadata
 .git/
+-e 
+# Environment files
+*.env
+*.env.*
