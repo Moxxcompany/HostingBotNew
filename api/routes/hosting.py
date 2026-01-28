@@ -148,6 +148,36 @@ async def get_hosting_plans(
                     "Custom PHP Settings",
                     "Best Value (Save 44%)"
                 ]
+            },
+            {
+                "id": 3,
+                "plan_name": "Pro Annual",
+                "name": "Pro Annual",
+                "whm_package": "pro_annual",
+                "type": "shared",
+                "disk_space_gb": 200,
+                "bandwidth_gb": 2000,
+                "databases": 100,
+                "email_accounts": 200,
+                "subdomains": 100,
+                "daily_price": float(Decimal(str(HOSTING_PRICES["pro_annual"])) / Decimal("365")),
+                "weekly_price": 0,
+                "monthly_price": 0,
+                "period_price": float(HOSTING_PRICES["pro_annual"]),
+                "yearly_price": float(HOSTING_PRICES["pro_annual"]),
+                "duration_days": 365,
+                "billing_cycle": "yearly",
+                "display_price": f"${float(HOSTING_PRICES['pro_annual']):.2f}/year",
+                "features": [
+                    "Everything in Pro 30 Days",
+                    "Unlimited Databases",
+                    "Unlimited Email Accounts",
+                    "Premium Support",
+                    "Free Domain Transfer",
+                    "Advanced Security Suite",
+                    "Monthly Performance Reports",
+                    "Best Value (Save 42% vs Monthly)"
+                ]
             }
         ]
     else:
@@ -162,6 +192,8 @@ async def get_hosting_plans(
             
             # Map billing cycle to WHM package naming convention
             whm_package = f"pro_{plan['billing_cycle'].replace('days', 'day')}"
+            if 'yearly' in plan['billing_cycle'] or 'annual' in plan['billing_cycle'].lower():
+                whm_package = "pro_annual"
             
             # Enhanced features list
             base_features = plan.get('features', [])
@@ -178,7 +210,7 @@ async def get_hosting_plans(
                         "Developer Tools",
                         "Perfect for Testing"
                     ]
-                else:
+                elif duration == 30:
                     base_features = [
                         "Everything in Pro 7 Days",
                         "Unlimited Subdomains",
@@ -187,6 +219,17 @@ async def get_hosting_plans(
                         "Priority Support",
                         "Custom PHP Settings",
                         "Best Value (Save 44%)"
+                    ]
+                else:
+                    base_features = [
+                        "Everything in Pro 30 Days",
+                        "Unlimited Databases",
+                        "Unlimited Email Accounts",
+                        "Premium Support",
+                        "Free Domain Transfer",
+                        "Advanced Security Suite",
+                        "Monthly Performance Reports",
+                        "Best Value (Save 42% vs Monthly)"
                     ]
             
             plan_data = {
@@ -202,15 +245,49 @@ async def get_hosting_plans(
                 "subdomains": plan['subdomains'],
                 "daily_price": daily_price,
                 "weekly_price": float(plan_price) if duration == 7 else 0,
-                "monthly_price": float(plan_price) if duration >= 30 else float(plan_price),
+                "monthly_price": float(plan_price) if duration == 30 else 0,
                 "period_price": float(plan_price),
-                "yearly_price": 0,
+                "yearly_price": float(plan_price) if duration >= 365 else 0,
                 "duration_days": duration,
                 "billing_cycle": plan['billing_cycle'],
                 "display_price": f"${float(plan_price):.2f}/{plan['billing_cycle']}",
                 "features": base_features
             }
             plans.append(plan_data)
+        
+        # Always add annual plan if not in database
+        has_annual = any(p['duration_days'] >= 365 for p in db_plans)
+        if not has_annual:
+            plans.append({
+                "id": 3,
+                "plan_name": "Pro Annual",
+                "name": "Pro Annual",
+                "whm_package": "pro_annual",
+                "type": "shared",
+                "disk_space_gb": 200,
+                "bandwidth_gb": 2000,
+                "databases": 100,
+                "email_accounts": 200,
+                "subdomains": 100,
+                "daily_price": float(Decimal(str(HOSTING_PRICES["pro_annual"])) / Decimal("365")),
+                "weekly_price": 0,
+                "monthly_price": 0,
+                "period_price": float(HOSTING_PRICES["pro_annual"]),
+                "yearly_price": float(HOSTING_PRICES["pro_annual"]),
+                "duration_days": 365,
+                "billing_cycle": "yearly",
+                "display_price": f"${float(HOSTING_PRICES['pro_annual']):.2f}/year",
+                "features": [
+                    "Everything in Pro 30 Days",
+                    "Unlimited Databases",
+                    "Unlimited Email Accounts",
+                    "Premium Support",
+                    "Free Domain Transfer",
+                    "Advanced Security Suite",
+                    "Monthly Performance Reports",
+                    "Best Value (Save 42% vs Monthly)"
+                ]
+            })
     
     return success_response({"plans": plans})
 
