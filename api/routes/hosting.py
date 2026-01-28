@@ -295,8 +295,8 @@ async def get_hosting_plans(
                 "duration_days": 365,
                 "billing_cycle": "yearly",
                 "display_price": f"${float(HOSTING_PRICES['pro_annual']):.2f}/year",
-                "savings_percentage": 25.0,
-                "savings_description": "Save 25% compared to monthly",
+                "savings_percentage": 44.0,
+                "savings_description": "Save 44% compared to monthly",
                 "features": [
                     "Everything in Pro 30 Days",
                     "Unlimited Databases",
@@ -305,7 +305,7 @@ async def get_hosting_plans(
                     "Free Domain Transfer",
                     "Advanced Security Suite",
                     "Monthly Performance Reports",
-                    "Best Value (Save 25% vs Monthly)"
+                    "Best Value (Save 44% vs Monthly)"
                 ]
             })
     
