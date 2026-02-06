@@ -1533,6 +1533,7 @@ async def favicon():
 
 # Health check endpoint - ALWAYS RETURNS 200
 @app.get("/health", include_in_schema=False)
+@app.get("/api/health", include_in_schema=False)
 async def health_check():
     """
     Health check for monitoring - ALWAYS returns 200 OK
