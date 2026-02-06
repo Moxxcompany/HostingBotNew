@@ -169,6 +169,22 @@ class DynoPayAdapter:
     
     def _extract_status(self, data: Dict[str, Any]) -> PaymentStatus:
         """Extract and normalize payment status"""
+        # NEW API: Check for event-based status first (e.g. payment.confirmed)
+        event = safe_string(data.get('event', ''))
+        if event:
+            event_lower = event.lower()
+            event_status_mapping = {
+                'payment.confirmed': PaymentStatus.CONFIRMED,
+                'payment.pending': PaymentStatus.PENDING,
+                'payment.underpaid': PaymentStatus.PENDING,
+                'payment.overpaid': PaymentStatus.CONFIRMED,
+                'payment.failed': PaymentStatus.FAILED,
+                'payment.expired': PaymentStatus.EXPIRED,
+            }
+            mapped = event_status_mapping.get(event_lower)
+            if mapped:
+                return mapped
+        
         raw_status = safe_string(data.get('status', 'pending'))
         if raw_status:
             normalized_status = raw_status.lower()
