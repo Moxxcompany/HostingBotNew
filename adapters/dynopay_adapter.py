@@ -43,7 +43,7 @@ class DynoPayAdapter:
             'refunded': PaymentStatus.REFUNDED
         }
         
-        # DynoPay field priority for amount extraction
+        # DynoPay field priority for amount extraction (includes new API fields)
         self.usd_amount_fields = [
             'base_amount', 'amount_usd', 'final_amount_usd', 
             'confirmed_amount_usd', 'total_usd', 'value_usd'
