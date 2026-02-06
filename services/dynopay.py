@@ -424,64 +424,34 @@ class DynoPayService:
                             
                             # Don't fail payment creation entirely, but security is compromised
                             
-                        # Get crypto amount using NON-BLOCKING cached exchange rate
-                        # This ensures payment address creation never blocks on API calls
-                        try:
-                            from services.fastforex import fastforex_service
-                            
-                            # Use fetch_cached_rate instead of blocking get_crypto_rate
-                            # Returns immediately with cached/fallback rate, refreshes in background if stale
-                            rate, rate_source = await fastforex_service.fetch_cached_rate(dynopay_currency, "USD")
-                            
-                            # Calculate crypto amount (rate is crypto per USD)
-                            crypto_amount = amount_to_use * rate
-                            
-                            # Format crypto amount for display (same logic as before)
-                            if crypto_amount >= 1:
-                                crypto_amount_display = f"{crypto_amount:.3f} {dynopay_currency}"
-                            elif crypto_amount >= 0.001:
-                                crypto_amount_display = f"{crypto_amount:.4f} {dynopay_currency}"
-                            else:
-                                crypto_amount_display = f"{crypto_amount:.6f} {dynopay_currency}"
-                            
-                            logger.info(f"📈 Crypto amount: ${amount_to_use} USD = {crypto_amount_display} (source: {rate_source})")
-                            
-                        except Exception as e:
-                            # Extreme fallback if even fetch_cached_rate fails (should never happen)
-                            logger.error(f"❌ CRITICAL: Non-blocking rate fetch failed: {str(e)}")
-                            # Use static fallback rates as last resort
-                            crypto_rates = {
-                                'BTC': 0.00001,     # ~$100k per BTC (Dec 2025)
-                                'ETH': 0.00033,     # ~$3k per ETH  
-                                'LTC': 0.012,       # ~$83 per LTC
-                                'DOGE': 7.0,        # ~$0.14 per DOGE
-                                'USDT-ERC20': 1.0,  # ~$1 per USDT
-                                'USDT-TRC20': 1.0   # ~$1 per USDT
-                            }
-                            rate = crypto_rates.get(dynopay_currency, 1.0)
-                            crypto_amount = amount_to_use * rate
-                            
-                            # Format with same logic
-                            if crypto_amount >= 1:
-                                crypto_amount_display = f"{crypto_amount:.3f} {dynopay_currency}"
-                            elif crypto_amount >= 0.001:
-                                crypto_amount_display = f"{crypto_amount:.4f} {dynopay_currency}"
-                            else:
-                                crypto_amount_display = f"{crypto_amount:.6f} {dynopay_currency}"
-                            
-                            logger.warning(f"⚠️ Using static fallback rate: ${amount_to_use} USD = {crypto_amount_display}")
+                        # Get crypto amount from DynoPay's response (actual amount to pay)
+                        # DynoPay returns: amount (crypto), base_amount (USD), currency
+                        crypto_amount = response_data.get('amount', 0)
+                        
+                        # Format crypto amount for display
+                        if crypto_amount >= 1:
+                            crypto_amount_display = f"{crypto_amount:.4f} {dynopay_currency}"
+                        elif crypto_amount >= 0.001:
+                            crypto_amount_display = f"{crypto_amount:.6f} {dynopay_currency}"
+                        else:
+                            crypto_amount_display = f"{crypto_amount:.8f} {dynopay_currency}"
+                        
+                        logger.info(f"📈 DynoPay crypto amount: ${amount_to_use} USD = {crypto_amount_display} (from API)")
                         
                         return {
                             'address': payment_address,
                             'currency': dynopay_currency,
                             'amount': amount_to_use,
                             'amount_display': amount_to_use,
-                            'crypto_amount': crypto_amount_display,  # Add estimated crypto amount
+                            'crypto_amount': crypto_amount_display,  # Actual amount from DynoPay
+                            'crypto_amount_raw': crypto_amount,  # Raw numeric value
                             'original_amount': value,
                             'is_wallet_deposit': value <= 0,
-                            'redirect_uri': data['redirect_uri'],  # Use original request data
+                            'redirect_uri': data['redirect_uri'],
                             'auth_token': auth_token,
-                            'meta_data': data['meta_data']  # Use original request data
+                            'meta_data': data['meta_data'],
+                            'transaction_id': response_data.get('transaction_id'),
+                            'qr_code': response_data.get('qr_code')
                         }
                     else:
                         logger.error(f"❌ DynoPay API response missing payment address: {result}")
