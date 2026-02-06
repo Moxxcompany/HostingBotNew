@@ -5648,6 +5648,12 @@ async def dynopay_webhook(request: Request):
         from adapters.dynopay_adapter import DynoPayAdapter
         from webhook_handler import PaymentWebhookHandler
         
+        # CRITICAL FIX: Inject our order_id from query params into callback_data
+        # DynoPay sends their transaction_id in the body, but OUR order_id is in query params
+        if order_id:
+            callback_data['order_id'] = order_id
+            logger.info(f"📌 Injected order_id from query params: {order_id}")
+        
         try:
             # Validate webhook schema
             validated_webhook = validate_webhook_data(callback_data, "dynopay")
