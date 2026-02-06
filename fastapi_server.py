@@ -5621,6 +5621,25 @@ async def dynopay_webhook(request: Request):
         callback_data = json.loads(body.decode('utf-8'))
         
         # =================================================================
+        # EVENT FILTER: Only process payment.confirmed events
+        # Ignore pending, underpaid, etc. — return 200 so DynoPay doesn't retry
+        # =================================================================
+        event = callback_data.get('event', '').lower()
+        status_raw = callback_data.get('status', '').lower()
+        
+        # Accept: payment.confirmed event OR legacy successful/confirmed/completed status
+        confirmed_events = {'payment.confirmed', 'payment.overpaid'}
+        confirmed_statuses = {'successful', 'confirmed', 'completed'}
+        
+        is_confirmed = (event in confirmed_events) or (status_raw in confirmed_statuses)
+        
+        if not is_confirmed:
+            logger.info(f"🔇 DynoPay webhook ignored (not confirmed): event='{event}', status='{status_raw}' — returning 200 OK")
+            return JSONResponse({"status": "ignored", "reason": f"Only confirmed payments processed (got event={event}, status={status_raw})"})
+        
+        logger.info(f"✅ DynoPay confirmed payment event: event='{event}', status='{status_raw}'")
+        
+        # =================================================================
         # TYPE-SAFE PROCESSING: Use DynoPay adapter and schema validation
         # =================================================================
         
