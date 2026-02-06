@@ -324,7 +324,11 @@ class DynoPayAdapter:
     def _extract_transaction_details(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Extract transaction-related details"""
         return {
-            'provider_payment_id': safe_string(data.get('payment_id')) or safe_string(data.get('id')),
+            'provider_payment_id': (
+                safe_string(data.get('payment_id')) or 
+                safe_string(data.get('id')) or
+                safe_string(data.get('link_id'))
+            ),
             'transaction_id': (
                 safe_string(data.get('txid')) or 
                 safe_string(data.get('transaction_id')) or 
