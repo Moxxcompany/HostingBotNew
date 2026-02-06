@@ -5400,6 +5400,7 @@ async def webhook_health_test_recovery():
 
 # BlockBee webhook endpoint - TYPE-SAFE VERSION
 @app.post("/webhook/blockbee", include_in_schema=False)
+@app.post("/api/webhook/blockbee", include_in_schema=False)
 async def blockbee_webhook(request: Request):
     """Handle BlockBee payment webhook with type-safe processing"""
     try:
