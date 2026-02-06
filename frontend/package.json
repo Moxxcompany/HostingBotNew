@@ -1,0 +1,10 @@
+{
+  "name": "hostbay-status",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx serve -s public -l 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
