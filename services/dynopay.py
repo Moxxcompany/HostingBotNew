@@ -447,7 +447,7 @@ class DynoPayService:
                             'crypto_amount_raw': crypto_amount,  # Raw numeric value
                             'original_amount': value,
                             'is_wallet_deposit': value <= 0,
-                            'redirect_uri': data['redirect_uri'],
+                            'webhook_url': data['webhook_url'],
                             'auth_token': auth_token,
                             'meta_data': data['meta_data'],
                             'transaction_id': response_data.get('transaction_id'),
