@@ -5150,8 +5150,9 @@ async def test_simple():
     """Simple webhook test without dependencies"""
     return JSONResponse({"status": "simple test ok"})
 
-# Telegram webhook endpoint
+# Telegram webhook endpoint (both paths for direct and ingress-proxied access)
 @app.post("/webhook/telegram", include_in_schema=False)
+@app.post("/api/webhook/telegram", include_in_schema=False)
 async def telegram_webhook(request: Request):
     """Handle Telegram webhook updates"""
     try:
