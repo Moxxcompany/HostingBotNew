@@ -83,7 +83,7 @@ def get_webhook_url(endpoint: str) -> str:
     """
     domain = get_webhook_domain()
     protocol = 'http' if domain.startswith('localhost') else 'https'
-    url = f"{protocol}://{domain}/webhook/{endpoint}"
+    url = f"{protocol}://{domain}/api/webhook/{endpoint}"
     
     return url
 
