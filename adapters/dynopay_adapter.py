@@ -143,6 +143,12 @@ class DynoPayAdapter:
         if order_id:
             return order_id
         
+        # NEW API: payment_id and link_id fields
+        order_id = safe_string(data.get('payment_id')) or safe_string(data.get('link_id'))
+        if order_id:
+            logger.debug(f"🔍 DYNOPAY: Extracted order_id from payment_id/link_id: {order_id}")
+            return order_id
+        
         # Check meta_data (DynoPay often puts order_id here)
         meta_data = data.get('meta_data', {})
         if isinstance(meta_data, dict):
