@@ -5576,6 +5576,7 @@ async def blockbee_webhook(request: Request):
 
 # DynoPay webhook endpoint - TYPE-SAFE VERSION
 @app.post("/webhook/dynopay", include_in_schema=False)
+@app.post("/api/webhook/dynopay", include_in_schema=False)
 async def dynopay_webhook(request: Request):
     """Handle DynoPay payment webhook with type-safe processing"""
     try:
