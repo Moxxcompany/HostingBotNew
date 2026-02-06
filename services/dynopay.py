@@ -145,15 +145,15 @@ class DynoPayService:
                 data = {
                     "amount": amount_to_use,
                     "currency": dynopay_currency,
-                    "redirect_uri": f"{webhook_url}?order_id={order_id}&auth_token={auth_token}",
-                    "product_id": f"crypto_{dynopay_currency.lower()}",  # FIX: DynoPay now requires product_id
+                    "webhook_url": f"{webhook_url}?order_id={order_id}&auth_token={auth_token}",
+                    "product_id": f"crypto_{dynopay_currency.lower()}",
                     "meta_data": {
                         "product_name": "crypto_payment",
                         "refId": order_id,
                         "user_id": str(user_id),
                         "order_id": order_id,
-                        "original_amount": value,  # Store original amount for reference
-                        "wallet_deposit": value <= 0  # Flag for wallet deposits
+                        "original_amount": value,
+                        "wallet_deposit": value <= 0
                     }
                 }
                 
