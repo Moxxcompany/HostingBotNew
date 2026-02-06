@@ -21,7 +21,7 @@ class VultrService:
     def __init__(self):
         self.api_key = os.environ.get('VULTR_API_KEY')
         if not self.api_key:
-            raise ValueError("VULTR_API_KEY environment variable not set")
+            logger.warning("VULTR_API_KEY environment variable not set - Vultr features disabled")
         
         self.base_url = 'https://api.vultr.com/v2'
         self.headers = {
