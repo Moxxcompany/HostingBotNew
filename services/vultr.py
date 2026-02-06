@@ -349,5 +349,9 @@ class VultrService:
         return None
 
 
-# Global instance
-vultr_service = VultrService()
+# Global instance (lazy - doesn't crash if VULTR_API_KEY is missing)
+try:
+    vultr_service = VultrService()
+except Exception as e:
+    logger.warning(f"Vultr service not initialized: {e}")
+    vultr_service = None
