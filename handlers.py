@@ -9650,7 +9650,7 @@ async def show_wallet_deposit_options(query):
 
 Select deposit amount:
 
-*Minimum deposit: $30 USD*
+*Minimum deposit: $10 USD*
 """
     
     # Preset amount options
