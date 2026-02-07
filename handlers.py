@@ -9757,7 +9757,7 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
         # Get or create user
         user_record = await get_or_create_user(user.id)
         
-        # Calculate crypto amount with 10% buffer (except for USDT)
+        # Calculate crypto amount - no buffer
         crypto_amount_to_request = None
         crypto_display = None
         
