@@ -10496,12 +10496,12 @@ Select deposit amount:
         # Preset amount options
         keyboard = [
             [
-                InlineKeyboardButton("$30", callback_data="deposit_amount_30"),
-                InlineKeyboardButton("$50", callback_data="deposit_amount_50")
+                InlineKeyboardButton("$10", callback_data="deposit_amount_10"),
+                InlineKeyboardButton("$25", callback_data="deposit_amount_25")
             ],
             [
-                InlineKeyboardButton("$100", callback_data="deposit_amount_100"),
-                InlineKeyboardButton("$200", callback_data="deposit_amount_200")
+                InlineKeyboardButton("$50", callback_data="deposit_amount_50"),
+                InlineKeyboardButton("$100", callback_data="deposit_amount_100")
             ],
             [InlineKeyboardButton("💵 Custom Amount", callback_data="deposit_amount_custom")],
             [InlineKeyboardButton(t("buttons.back_to_wallet", user_lang), callback_data="wallet_main")]
