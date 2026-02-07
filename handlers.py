@@ -5223,7 +5223,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 context.user_data['awaiting_deposit_amount'] = True
                 keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="wallet_deposit")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
-                await safe_edit_message(query, "💵 Custom Amount\n\nPlease send your desired deposit amount (minimum $30).\n\nExample: 50", reply_markup=reply_markup)
+                await safe_edit_message(query, "💵 Custom Amount\n\nPlease send your desired deposit amount (minimum $10).\n\nExample: 50", reply_markup=reply_markup)
             else:
                 # Preset amount selected
                 try:
