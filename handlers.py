@@ -10490,7 +10490,7 @@ async def handle_wallet_deposit_from_qr(query):
 
 Select deposit amount:
 
-<b>Minimum deposit: $30 USD</b>
+<b>Minimum deposit: $10 USD</b>
 """
         
         # Preset amount options
