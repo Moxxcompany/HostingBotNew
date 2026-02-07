@@ -1572,14 +1572,13 @@ async def _process_domain_payment(order_id: str, payment_details: Dict[str, Any]
                     except Exception as store_err:
                         logger.warning(f"⚠️ Could not store amount_received: {store_err}")
                     
-                    # CRITICAL SECURITY FIX: Check for underpayment BEFORE proceeding
-                    # Underpayment threshold: 90% of expected (allowing for exchange rate fluctuations)
+                    # SECURITY: Check for underpayment BEFORE proceeding
+                    # Require exact payment amount (no buffer tolerance)
                     from decimal import Decimal, ROUND_HALF_UP
                     received_decimal = Decimal(str(received_amount))
                     expected_decimal = Decimal(str(expected_price))
-                    minimum_acceptable = expected_decimal * Decimal('0.90')  # 90% threshold
                     
-                    if received_decimal < minimum_acceptable:
+                    if received_decimal < expected_decimal:
                         underpayment_amount = expected_decimal - received_decimal
                         logger.error(f"🚨 UNDERPAYMENT DETECTED: Expected ${expected_price:.2f}, Received ${received_amount:.2f}, Short by ${underpayment_amount:.2f}")
                         logger.error(f"   Domain registration BLOCKED for {domain_name} - insufficient payment")
