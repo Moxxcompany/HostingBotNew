@@ -9349,15 +9349,16 @@ async def process_crypto_payment(query, crypto_type, domain_name, price, currenc
             resolve_user_language(user.id, user_lang_code)
         )
         
-        # Pass exact USD amount to provider - no buffer
+        # Pass USD amount + $2 crypto padding to provider for price protection
         original_price = Decimal(str(float(price)))
+        gateway_price = original_price + Decimal('2')
         
         # Generate payment with configured provider (DynoPay/BlockBee)
         order_id = f"domain_{domain_name}_{user.id}_{int(time.time())}"
         payment_result = await create_payment_address(
             currency=crypto_type.lower(),
             order_id=order_id,
-            value=original_price,
+            value=gateway_price,
             user_id=user_record['id']
         )
         
