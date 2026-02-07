@@ -19434,14 +19434,15 @@ async def handle_rdp_crypto_currency(query, context, currency: str):
         currency_info = crypto_config.get_currency_by_code(currency)
         crypto_name = currency_info.get('name', currency.upper())
         
-        # Pass exact USD amount to provider - no buffer
+        # Pass USD amount + $2 crypto padding to provider for price protection
         original_amount = Decimal(str(total_amount))
+        gateway_amount = original_amount + Decimal('2')
         
         # Create payment address using unified infrastructure
         payment_result = await create_payment_address(
             currency=currency,
             order_id=order_uuid,
-            value=original_amount,
+            value=gateway_amount,
             user_id=db_user
         )
         
