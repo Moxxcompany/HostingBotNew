@@ -9347,20 +9347,15 @@ async def process_crypto_payment(query, crypto_type, domain_name, price, currenc
             resolve_user_language(user.id, user_lang_code)
         )
         
-        # Calculate crypto amount with 10% buffer for volatile cryptos (not USDT)
+        # Pass exact USD amount to provider - no buffer
         original_price = Decimal(str(float(price)))
-        is_stablecoin = crypto_type.upper().startswith('USDT')
-        if is_stablecoin:
-            buffered_price = original_price  # No buffer for stablecoins
-        else:
-            buffered_price = original_price * Decimal('1.10')  # 10% buffer for volatile cryptos
         
         # Generate payment with configured provider (DynoPay/BlockBee)
         order_id = f"domain_{domain_name}_{user.id}_{int(time.time())}"
         payment_result = await create_payment_address(
             currency=crypto_type.lower(),
             order_id=order_id,
-            value=buffered_price,  # Use buffered price for crypto calculation
+            value=original_price,
             user_id=user_record['id']
         )
         
