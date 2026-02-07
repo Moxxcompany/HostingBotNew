@@ -9842,21 +9842,9 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
         
         from message_utils import format_inline_code
         
-        # Build payment message with calculator information
+        # Build payment message with crypto amount from provider
         if deposit_amount > 0 and crypto_display:
-            # Show calculated crypto amount with buffer info
-            is_stablecoin = crypto_type.upper().startswith('USDT')
-            if is_stablecoin:
-                payment_message = f"""💰 {crypto_name} Deposit
-
-Send exactly: <code>{crypto_display}</code>
-
-Address: {format_inline_code(payment_result['address'])}
-
-✅ You will receive: ${deposit_amount:.2f} USD
-💡 Tap address to copy"""
-            else:
-                payment_message = f"""💰 {crypto_name} Deposit
+            payment_message = f"""💰 {crypto_name} Deposit
 
 Send exactly: <code>{crypto_display}</code>
 
