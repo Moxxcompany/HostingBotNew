@@ -12737,9 +12737,9 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data['awaiting_deposit_amount'] = False  # Clear state
         try:
             amount = float(text.replace('$', '').replace(',', '').strip())
-            if amount < 30:
+            if amount < 10:
                 user_lang = await resolve_user_language(user.id, user.language_code if hasattr(user, 'language_code') else None)
-                await effective_message.reply_text(f"❌ Minimum deposit is $30 USD. Please enter a larger amount.")
+                await effective_message.reply_text(f"❌ Minimum deposit is $10 USD. Please enter a larger amount.")
                 if context.user_data is not None:
                     context.user_data['awaiting_deposit_amount'] = True  # Re-enable state
                 return
