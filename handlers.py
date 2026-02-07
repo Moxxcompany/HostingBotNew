@@ -9871,7 +9871,7 @@ Address: {format_inline_code(payment_result['address'])}
         
         await safe_edit_message(query, payment_message, reply_markup=final_keyboard, parse_mode='HTML')
         
-        logger.info(f"💰 Wallet deposit payment generated for user {user.id}: ${deposit_amount} USD = {crypto_display} (with buffer)")
+        logger.info(f"💰 Wallet deposit payment generated for user {user.id}: ${deposit_amount} USD = {crypto_display}")
         
     except Exception as e:
         logger.error(f"Error processing wallet crypto deposit: {e}")
