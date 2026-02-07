@@ -1157,6 +1157,17 @@ async def _detect_and_process_overpayment(order_id: str, payment_details: Dict[s
         
         received_amount = payment_details.get('amount_usd', 0)
         
+        # Subtract $2 crypto padding from received amount before overpayment calculation
+        # Gateway receives original_price + $2 for price protection — this $2 should not be credited
+        CRYPTO_PADDING = Decimal('2')
+        from decimal import Decimal as D
+        try:
+            received_for_overpayment = D(str(received_amount)) - CRYPTO_PADDING
+            if received_for_overpayment < D('0'):
+                received_for_overpayment = D('0')
+        except:
+            received_for_overpayment = D(str(received_amount))
+        
         # Validate received amount is positive and reasonable
         if received_amount <= 0 or received_amount > 10000:
             logger.warning(f"❌ OVERPAYMENT: Invalid received amount ${received_amount} for order {order_id}")
