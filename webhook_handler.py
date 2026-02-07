@@ -1217,7 +1217,7 @@ async def _detect_and_process_overpayment(order_id: str, payment_details: Dict[s
                 expected_amount = to_currency_decimal(results[0]['expected_amount'], "expected_amount")
                 user_id = results[0]['user_id']
                 domain_name = results[0]['domain_name']
-                logger.info(f"💰 OVERPAYMENT: Found hosting order - expected: ${expected_amount}, received: ${received_amount}")
+                logger.info(f"💰 OVERPAYMENT: Found hosting order - expected: ${expected_amount}, received: ${received_amount} (adjusted: ${received_for_overpayment} after padding)")
         
         # If no expected amount found, skip overpayment processing
         if expected_amount <= 0 or not user_id:
