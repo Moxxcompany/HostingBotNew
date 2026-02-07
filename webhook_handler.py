@@ -1224,10 +1224,10 @@ async def _detect_and_process_overpayment(order_id: str, payment_details: Dict[s
             logger.info(f"💰 OVERPAYMENT: No expected amount found for {order_type} order {order_id}")
             return payment_details
         
-        # Calculate overpayment using payment validation (now accepts Decimal)
+        # Calculate overpayment using payment validation with padding-adjusted amount
         validation_result = validate_payment_amount(
             expected_usd=expected_amount,
-            received_usd=received_amount,
+            received_usd=float(received_for_overpayment),
             crypto_currency=payment_details.get('currency', 'CRYPTO'),
             received_crypto=payment_details.get('amount_crypto', 0),
             payment_type=f'{order_type}_order',
