@@ -1341,33 +1341,36 @@ async def _process_wallet_deposit(order_id: str, payment_details: Dict[str, Any]
                 selected_amount = amount_received
             
             # WALLET DEPOSIT LOGIC:
-            # - If received >= $10 minimum: credit the FULL received amount to wallet
-            # - If received < $10 minimum: reject deposit entirely
-            # - No cap at selected amount - user benefits from any overpayment
-            amount_usd = amount_received
-            
+            # Gateway receives selected_amount + $2 padding for crypto price protection
+            # We must subtract the $2 padding from received amount before crediting
+            # - If (received - $2) >= $10 minimum: credit (received - $2)
+            # - If (received - $2) < $10 minimum: reject deposit entirely
+            CRYPTO_PADDING = Decimal('2')
             MINIMUM_DEPOSIT = Decimal('10')
             
-            if amount_received < MINIMUM_DEPOSIT:
-                logger.warning(f"❌ WALLET DEPOSIT REJECTED: Received ${amount_received:.2f} is below minimum ${MINIMUM_DEPOSIT} for order {order_id}")
+            # Subtract the $2 crypto padding from received amount
+            amount_usd = amount_received - CRYPTO_PADDING
+            if amount_usd < Decimal('0'):
+                amount_usd = Decimal('0')
+            
+            if amount_usd < MINIMUM_DEPOSIT:
+                logger.warning(f"❌ WALLET DEPOSIT REJECTED: Received ${amount_received:.2f} - ${CRYPTO_PADDING} padding = ${amount_usd:.2f}, below minimum ${MINIMUM_DEPOSIT} for order {order_id}")
                 # Update payment intent status
                 try:
                     from database import execute_update
                     await execute_update(
-                        "UPDATE payment_intents SET status = 'rejected', metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('rejection_reason', 'below_minimum', 'amount_received', %s) WHERE order_id = %s",
-                        (float(amount_received), str(order_id))
+                        "UPDATE payment_intents SET status = 'rejected', metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('rejection_reason', 'below_minimum', 'amount_received', %s, 'after_padding', %s) WHERE order_id = %s",
+                        (float(amount_received), float(amount_usd), str(order_id))
                     )
                 except Exception as rej_err:
                     logger.warning(f"⚠️ Could not update rejected payment intent: {rej_err}")
                 return
             
-            # Credit full received amount (even if more than selected)
-            if amount_received > selected_amount and selected_amount > Decimal('0'):
-                logger.info(f"💰 OVERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting full ${amount_received:.2f}")
-            elif amount_received < selected_amount:
-                logger.info(f"💰 UNDERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting ${amount_received:.2f}")
+            # Log credit calculation
+            if amount_usd > selected_amount and selected_amount > Decimal('0'):
+                logger.info(f"💰 OVERPAYMENT: User selected ${selected_amount:.2f}, received ${amount_received:.2f} - padding ${CRYPTO_PADDING} = crediting ${amount_usd:.2f}")
             else:
-                logger.info(f"💰 EXACT PAYMENT: User sent ${amount_received:.2f}")
+                logger.info(f"💰 WALLET DEPOSIT: Received ${amount_received:.2f} - padding ${CRYPTO_PADDING} = crediting ${amount_usd:.2f}")
             
             logger.info(f"💰 WALLET_DEPOSIT_DEBUG: received=${amount_received:.2f}, selected=${selected_amount:.2f}, crediting=${amount_usd:.2f}")
             
