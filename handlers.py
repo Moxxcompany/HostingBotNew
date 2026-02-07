@@ -5228,8 +5228,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # Preset amount selected
                 try:
                     amount = float(amount_str)
-                    if amount < 30:
-                        await safe_edit_message(query, f"❌ Minimum deposit is $30 USD")
+                    if amount < 10:
+                        await safe_edit_message(query, f"❌ Minimum deposit is $10 USD")
                     else:
                         await show_crypto_selection_for_deposit(query, amount)
                 except ValueError:
