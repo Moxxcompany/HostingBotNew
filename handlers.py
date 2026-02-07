@@ -8034,10 +8034,14 @@ async def process_unified_crypto_payment(query, crypto_type: str, subscription_i
         
         crypto_name = crypto_names.get(crypto_type, crypto_type.upper())
         
+        # Get crypto amount from provider response
+        crypto_amount_display = payment_result.get('crypto_amount', '')
+        crypto_line = f"\n<b>Crypto:</b> <code>{crypto_amount_display}</code>" if crypto_amount_display else ""
+        
         message = f"""
 💰 <b>{crypto_name} Payment</b>
 
-<b>Amount:</b> ${amount:.2f} • <b>Order:</b> #{order_id}
+<b>Amount:</b> ${amount:.2f}{crypto_line} • <b>Order:</b> #{order_id}
 
 <b>📱 Address:</b>
 <pre>{payment_address}</pre>
