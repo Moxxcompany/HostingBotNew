@@ -7992,20 +7992,15 @@ async def process_unified_crypto_payment(query, crypto_type: str, subscription_i
         from database import get_or_create_user
         user_record = await get_or_create_user(telegram_id=user.id)
         
-        # Calculate crypto amount with 10% buffer for volatile cryptos (not USDT)
+        # Calculate crypto amount - no buffer, pass exact USD amount to provider
         original_amount = Decimal(str(amount))
-        is_stablecoin = crypto_type.upper().startswith('USDT')
-        if is_stablecoin:
-            buffered_amount = original_amount  # No buffer for stablecoins
-        else:
-            buffered_amount = original_amount * Decimal('1.10')  # 10% buffer for volatile cryptos
         
         # Generate payment address
-        logger.info(f"💰 Generating {crypto_type.upper()} payment address for unified hosting: User {user.id}, Amount ${amount:.2f} (buffered: ${buffered_amount:.2f}), Subscription #{subscription_id}")
+        logger.info(f"💰 Generating {crypto_type.upper()} payment address for unified hosting: User {user.id}, Amount ${amount:.2f}, Subscription #{subscription_id}")
         payment_result = await create_payment_address(
             currency=crypto_type,
             order_id=f"UH{subscription_id}",
-            value=buffered_amount,  # Use buffered amount for crypto calculation
+            value=original_amount,
             user_id=user_record['id']
         )
         
