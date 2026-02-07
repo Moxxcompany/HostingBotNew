@@ -9769,16 +9769,9 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
                 float(deposit_amount), crypto_type
             )
             
-            # Apply 10% buffer for volatile cryptos (not USDT)
-            # Convert float to Decimal for precision
+            # No buffer - use exact amount
             base_crypto_decimal = Decimal(str(base_crypto_amount))
-            is_stablecoin = crypto_type.upper().startswith('USDT')
-            if is_stablecoin:
-                # No buffer for USDT stablecoins
-                crypto_amount_to_request = base_crypto_decimal
-            else:
-                # Add 10% buffer for BTC, ETH, LTC, DOGE to protect against price fluctuations
-                crypto_amount_to_request = base_crypto_decimal * Decimal('1.10')
+            crypto_amount_to_request = base_crypto_decimal
             
             # Format crypto amount for display
             if crypto_amount_to_request >= 1:
