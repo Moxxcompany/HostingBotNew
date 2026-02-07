@@ -10042,19 +10042,15 @@ async def _show_wallet_deposit_qr(query, order_id, deposit):
     crypto_currency = deposit['crypto_currency']
     payment_address = deposit['payment_address']
     
-    # Calculate crypto amount with 10% buffer (same logic as payment creation)
+    # Calculate crypto amount - no buffer, use exact rate
     crypto_display = None
     if usd_amount > 0:
         try:
             from services.fastforex import fastforex_service
             base_crypto_amount, _ = await fastforex_service.get_usd_to_crypto_amount(usd_amount, crypto_currency)
             
-            # Apply 10% buffer for volatile cryptos (not USDT)
-            is_stablecoin = crypto_currency.upper().startswith('USDT')
-            if is_stablecoin:
-                crypto_amount = Decimal(str(base_crypto_amount))
-            else:
-                crypto_amount = Decimal(str(base_crypto_amount)) * Decimal('1.10')
+            # No buffer - use exact amount
+            crypto_amount = Decimal(str(base_crypto_amount))
             
             # Format crypto amount
             if crypto_amount >= 1:
