@@ -7724,8 +7724,6 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
         await safe_edit_message(query, progress_msg, parse_mode='HTML')
         
         original_amount = Decimal(str(amount))
-        is_stablecoin = crypto.upper().startswith('USDT')
-        buffered_amount = original_amount if is_stablecoin else original_amount * Decimal('1.10')
         
         order_id = f"hosting_{intent_id}_{user.id}_{int(time.time())}"
         
@@ -7733,7 +7731,7 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
         payment_result = await PaymentProviderFactory.create_payment_address_with_fallback(
             currency=crypto.lower(),
             order_id=order_id,
-            value=buffered_amount,
+            value=original_amount,
             user_id=user_id
         )
         
