@@ -1790,7 +1790,7 @@ async def _process_hosting_payment(order_id: str, payment_details: Dict[str, Any
                             except:
                                 received_amount = Decimal('0')
                             
-                            minimum_acceptable = expected_amount * Decimal('0.90')  # 90% threshold
+                            minimum_acceptable = expected_amount  # Require exact payment
                             
                             if received_amount < minimum_acceptable:
                                 shortfall = expected_amount - received_amount
