@@ -9815,6 +9815,11 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
             await safe_edit_message(query, "❌ Payment Error\n\nCould not generate payment address. Please try again.")
             return
         
+        # Use crypto amount from payment provider (DynoPay/BlockBee) instead of local calculation
+        provider_crypto_amount = payment_result.get('crypto_amount')
+        if provider_crypto_amount:
+            crypto_display = provider_crypto_amount
+        
         # Save wallet deposit to database
         await create_wallet_deposit_with_uuid(
             user_id=user_record['id'],
