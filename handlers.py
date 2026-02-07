@@ -17078,13 +17078,8 @@ async def process_hosting_crypto_payment(query, crypto_type: str, subscription_i
         from database import get_or_create_user
         user_record = await get_or_create_user(telegram_id=user.id)
         
-        # Calculate crypto amount with 10% buffer for volatile cryptos (not USDT)
+        # Pass exact USD amount to provider - no buffer
         original_amount = Decimal(str(amount))
-        is_stablecoin = crypto_type.upper().startswith('USDT')
-        if is_stablecoin:
-            buffered_amount = original_amount  # No buffer for stablecoins
-        else:
-            buffered_amount = original_amount * Decimal('1.10')  # 10% buffer for volatile cryptos
         
         # Generate payment with configured provider (DynoPay/BlockBee)
         order_id = f"hosting_{subscription_id}_{user.id}_{int(time.time())}"
@@ -17094,7 +17089,7 @@ async def process_hosting_crypto_payment(query, crypto_type: str, subscription_i
         payment_result = await PaymentProviderFactory.create_payment_address_with_fallback(
             currency=crypto_type.lower(),
             order_id=order_id,
-            value=buffered_amount,  # Use buffered amount for crypto calculation
+            value=original_amount,
             user_id=user_record['id']
         )
         
