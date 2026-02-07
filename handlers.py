@@ -19428,19 +19428,14 @@ async def handle_rdp_crypto_currency(query, context, currency: str):
         currency_info = crypto_config.get_currency_by_code(currency)
         crypto_name = currency_info.get('name', currency.upper())
         
-        # Calculate crypto amount with 10% buffer for volatile cryptos (not USDT)
+        # Pass exact USD amount to provider - no buffer
         original_amount = Decimal(str(total_amount))
-        is_stablecoin = currency.upper().startswith('USDT')
-        if is_stablecoin:
-            buffered_amount = original_amount  # No buffer for stablecoins
-        else:
-            buffered_amount = original_amount * Decimal('1.10')  # 10% buffer for volatile cryptos
         
         # Create payment address using unified infrastructure
         payment_result = await create_payment_address(
             currency=currency,
             order_id=order_uuid,
-            value=buffered_amount,  # Use buffered amount for crypto calculation
+            value=original_amount,
             user_id=db_user
         )
         
