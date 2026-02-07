@@ -1340,24 +1340,34 @@ async def _process_wallet_deposit(order_id: str, payment_details: Dict[str, Any]
                 logger.warning(f"⚠️ Could not parse selected amount: {selected_amount_raw} - using received amount")
                 selected_amount = amount_received
             
-            # CRITICAL: Credit only min(received, selected) to prevent overpayment exploitation
-            # - If user sends less than selected: credit only what was received
-            # - If user sends more than selected: credit only what was selected (cap at requested amount)
-            # Initialize amount_usd to prevent UnboundLocalError
+            # WALLET DEPOSIT LOGIC:
+            # - If received >= $10 minimum: credit the FULL received amount to wallet
+            # - If received < $10 minimum: reject deposit entirely
+            # - No cap at selected amount - user benefits from any overpayment
             amount_usd = amount_received
             
-            if selected_amount > Decimal('0'):
-                amount_usd = min(amount_received, selected_amount)
-                if amount_received < selected_amount:
-                    logger.info(f"💰 UNDERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting ${amount_usd:.2f}")
-                elif amount_received > selected_amount:
-                    logger.info(f"💰 OVERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting ${amount_usd:.2f} (capped at selected)")
-                else:
-                    logger.info(f"💰 EXACT PAYMENT: User selected and sent ${amount_usd:.2f}")
+            MINIMUM_DEPOSIT = Decimal('10')
+            
+            if amount_received < MINIMUM_DEPOSIT:
+                logger.warning(f"❌ WALLET DEPOSIT REJECTED: Received ${amount_received:.2f} is below minimum ${MINIMUM_DEPOSIT} for order {order_id}")
+                # Update payment intent status
+                try:
+                    from database import execute_update
+                    await execute_update(
+                        "UPDATE payment_intents SET status = 'rejected', metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object('rejection_reason', 'below_minimum', 'amount_received', %s) WHERE order_id = %s",
+                        (float(amount_received), str(order_id))
+                    )
+                except Exception as rej_err:
+                    logger.warning(f"⚠️ Could not update rejected payment intent: {rej_err}")
+                return
+            
+            # Credit full received amount (even if more than selected)
+            if amount_received > selected_amount and selected_amount > Decimal('0'):
+                logger.info(f"💰 OVERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting full ${amount_received:.2f}")
+            elif amount_received < selected_amount:
+                logger.info(f"💰 UNDERPAYMENT: User selected ${selected_amount:.2f} but sent ${amount_received:.2f} - crediting ${amount_received:.2f}")
             else:
-                # Legacy payment intents with no selected amount - credit received amount
-                # This handles old intents created before the deposit calculator was implemented
-                logger.warning(f"⚠️ Legacy payment intent with no selected amount - crediting full received: ${amount_usd:.2f}")
+                logger.info(f"💰 EXACT PAYMENT: User sent ${amount_received:.2f}")
             
             logger.info(f"💰 WALLET_DEPOSIT_DEBUG: received=${amount_received:.2f}, selected=${selected_amount:.2f}, crediting=${amount_usd:.2f}")
             
