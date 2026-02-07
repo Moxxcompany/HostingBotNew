@@ -2173,7 +2173,7 @@ async def _process_rdp_payment(order_id: str, payment_details: Dict[str, Any]):
         except Exception as store_err:
             logger.warning(f"⚠️ Could not store RDP amount_received: {store_err}")
         
-        minimum_acceptable = total_amount  # Require exact payment
+        minimum_acceptable = total_amount * Decimal('0.97')  # 3% tolerance
         
         if amount_received < minimum_acceptable:
             shortfall = total_amount - amount_received
