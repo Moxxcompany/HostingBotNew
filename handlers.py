@@ -7724,6 +7724,7 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
         await safe_edit_message(query, progress_msg, parse_mode='HTML')
         
         original_amount = Decimal(str(amount))
+        gateway_amount = original_amount + Decimal('2')  # +$2 crypto padding for price protection
         
         order_id = f"hosting_{intent_id}_{user.id}_{int(time.time())}"
         
@@ -7731,7 +7732,7 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
         payment_result = await PaymentProviderFactory.create_payment_address_with_fallback(
             currency=crypto.lower(),
             order_id=order_id,
-            value=original_amount,
+            value=gateway_amount,
             user_id=user_id
         )
         
