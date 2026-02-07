@@ -1940,7 +1940,7 @@ async def _process_hosting_payment(order_id: str, payment_details: Dict[str, Any
             except Exception as store_err:
                 logger.warning(f"⚠️ Could not store hosting amount_received: {store_err}")
             
-            min_acceptable = expected_amt * Decimal('0.90')
+            min_acceptable = expected_amt  # Require exact payment
             
             if received_amt < min_acceptable:
                 shortfall = expected_amt - received_amt
