@@ -5245,8 +5245,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 crypto_code = parts[0]
                 try:
                     amount_usd = float(parts[1])
-                    if amount_usd < 30:
-                        await safe_edit_message(query, f"❌ Minimum deposit is $30 USD")
+                    if amount_usd < 10:
+                        await safe_edit_message(query, f"❌ Minimum deposit is $10 USD")
                     elif crypto_config.is_supported(crypto_code):
                         await process_wallet_crypto_deposit(query, crypto_code, amount_usd)
                     else:
