@@ -7724,7 +7724,9 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
         await safe_edit_message(query, progress_msg, parse_mode='HTML')
         
         original_amount = Decimal(str(amount))
-        gateway_amount = original_amount + Decimal('2')  # +$2 crypto padding for price protection
+        # Skip $2 padding for USDT (stablecoin, no volatility)
+        is_stablecoin = crypto.lower() in ('usdt', 'usdt_trc20', 'usdt_erc20')
+        gateway_amount = original_amount if is_stablecoin else original_amount + Decimal('2')
         
         order_id = f"hosting_{intent_id}_{user.id}_{int(time.time())}"
         
