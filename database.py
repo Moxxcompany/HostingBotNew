@@ -6037,13 +6037,13 @@ async def release_intent_claim(intent_id: int, provider_name: str, success: bool
                 (payment_address, provider_name, external_order_id, intent_id)
             )
             
-            # Update provider claim as successful
+            # Update provider claim as successful (match by intent_id only since backup provider may differ from claim creator)
             await execute_update(
                 """UPDATE provider_claims 
-                   SET status = 'completed', external_address = %s, 
+                   SET status = 'completed', provider_name = %s, external_address = %s, 
                        external_order_id = %s, updated_at = CURRENT_TIMESTAMP 
-                   WHERE intent_id = %s AND provider_name = %s""",
-                (payment_address, external_order_id, intent_id, provider_name)
+                   WHERE intent_id = %s AND status IN ('claiming', 'failed')""",
+                (provider_name, payment_address, external_order_id, intent_id)
             )
             
             logger.info(f"✅ Successfully released intent {intent_id} claim with address {payment_address}")
