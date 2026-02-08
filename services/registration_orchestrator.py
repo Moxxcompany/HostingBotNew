@@ -886,8 +886,10 @@ class RegistrationOrchestrator:
                 payment_details.get('crypto_currency', 'Crypto').upper()
             )
             
+            from pricing_utils import format_crypto_amount
+            crypto_display_str = format_crypto_amount(payment_details.get('received_crypto', 0), crypto_name)
             message = f"🚀 <b>Domain Registration Progress</b>\n\n"
-            message += f"💰 Amount: <b>${payment_details.get('expected_usd', 0):.2f}</b> from {payment_details.get('received_crypto', 0):.6f} {crypto_name}\n"
+            message += f"💰 Amount: <b>${payment_details.get('expected_usd', 0):.2f}</b> from {crypto_display_str}\n"
             message += f"🌐 Domain: <code>{domain_name}</code>\n"
             message += f"✅ Step 1: DNS zone created\n"
             message += f"🔄 Step 2: <b>Registering with provider...</b>\n"
