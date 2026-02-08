@@ -76,9 +76,9 @@ class PaymentProviderFactory:
     @classmethod
     def get_backup_provider(cls) -> Union[DynoPayService, BlockBeeService]:
         """Get the backup payment provider - returns the opposite of the primary"""
-        primary = cls.get_primary_provider()
+        provider_name = cls.get_provider_name()
         
-        if isinstance(primary, DynoPayService):
+        if provider_name == 'dynopay':
             logger.info("Using BlockBee as backup payment provider")
             return cls.get_blockbee_service()
         else:
@@ -87,7 +87,7 @@ class PaymentProviderFactory:
                 logger.info("Using DynoPay as backup payment provider")
                 return dynopay
             else:
-                logger.warning("Backup provider DynoPay not available, no backup available")
+                logger.warning("Backup provider DynoPay not available, no distinct backup")
                 return cls.get_blockbee_service()
     
     @classmethod
@@ -101,7 +101,7 @@ class PaymentProviderFactory:
         # ATOMIC STEP: Create or get existing payment intent atomically
         # This fixes the race condition by using atomic INSERT...ON CONFLICT
         primary_provider = cls.get_primary_provider()
-        provider_name = 'dynopay' if isinstance(primary_provider, DynoPayService) else 'blockbee'
+        provider_name = cls.get_provider_name()
         
         # Use UUID-based payment intent creation for production-safe ID management
         intent_uuid = await create_payment_intent_with_uuid(
