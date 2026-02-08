@@ -9784,13 +9784,9 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
             base_crypto_decimal = Decimal(str(base_crypto_amount))
             crypto_amount_to_request = base_crypto_decimal
             
-            # Format crypto amount for display
-            if crypto_amount_to_request >= 1:
-                crypto_display = f"{crypto_amount_to_request:.4f} {crypto_type.upper()}"
-            elif crypto_amount_to_request >= 0.001:
-                crypto_display = f"{crypto_amount_to_request:.6f} {crypto_type.upper()}"
-            else:
-                crypto_display = f"{crypto_amount_to_request:.8f} {crypto_type.upper()}"
+            # Format crypto amount for display (strip trailing zeros)
+            from pricing_utils import format_crypto_amount
+            crypto_display = format_crypto_amount(crypto_amount_to_request, crypto_type.upper())
         
         # Create order using UUID-based function
         order_uuid = await create_order_with_uuid(
@@ -10067,12 +10063,8 @@ async def _show_wallet_deposit_qr(query, order_id, deposit):
             crypto_amount = Decimal(str(base_crypto_amount))
             
             # Format crypto amount
-            if crypto_amount >= 1:
-                crypto_display = f"{crypto_amount:.4f} {crypto_currency}"
-            elif crypto_amount >= 0.001:
-                crypto_display = f"{crypto_amount:.6f} {crypto_currency}"
-            else:
-                crypto_display = f"{crypto_amount:.8f} {crypto_currency}"
+            from pricing_utils import format_crypto_amount
+            crypto_display = format_crypto_amount(crypto_amount, crypto_currency)
         except Exception as e:
             logger.warning(f"Could not calculate crypto amount for QR: {e}")
     

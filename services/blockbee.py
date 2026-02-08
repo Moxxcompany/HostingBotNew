@@ -147,13 +147,9 @@ class BlockBeeService:
                             rate = crypto_rates.get(currency.upper(), 1.0)
                             crypto_amount = value / rate
                             
-                            # Format crypto amount for display
-                            if crypto_amount >= 1:
-                                crypto_amount_display = f"{crypto_amount:.3f} {currency.upper()}"
-                            elif crypto_amount >= 0.001:
-                                crypto_amount_display = f"{crypto_amount:.4f} {currency.upper()}"
-                            else:
-                                crypto_amount_display = f"{crypto_amount:.6f} {currency.upper()}"
+                            # Format crypto amount for display (strip trailing zeros)
+                            from pricing_utils import format_crypto_amount
+                            crypto_amount_display = format_crypto_amount(crypto_amount, currency.upper())
                         
                         # Enhanced API success logging
                         if PAYMENT_LOGGING_AVAILABLE:

@@ -428,13 +428,9 @@ class DynoPayService:
                         # DynoPay returns: amount (crypto), base_amount (USD), currency
                         crypto_amount = response_data.get('amount', 0)
                         
-                        # Format crypto amount for display
-                        if crypto_amount >= 1:
-                            crypto_amount_display = f"{crypto_amount:.4f} {dynopay_currency}"
-                        elif crypto_amount >= 0.001:
-                            crypto_amount_display = f"{crypto_amount:.6f} {dynopay_currency}"
-                        else:
-                            crypto_amount_display = f"{crypto_amount:.8f} {dynopay_currency}"
+                        # Format crypto amount for display (strip trailing zeros)
+                        from pricing_utils import format_crypto_amount
+                        crypto_amount_display = format_crypto_amount(crypto_amount, dynopay_currency)
                         
                         logger.info(f"📈 DynoPay crypto amount: ${amount_to_use} USD = {crypto_amount_display} (from API)")
                         

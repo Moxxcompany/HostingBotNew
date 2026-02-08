@@ -193,13 +193,9 @@ class FastForexService:
         
         crypto_amount = usd_amount * rate
         
-        # Format crypto amount for display
-        if crypto_amount >= 1:
-            formatted = f"{crypto_amount:.3f} {crypto_symbol}"
-        elif crypto_amount >= 0.001:
-            formatted = f"{crypto_amount:.4f} {crypto_symbol}"
-        else:
-            formatted = f"{crypto_amount:.6f} {crypto_symbol}"
+        # Format crypto amount for display (strip trailing zeros)
+        from pricing_utils import format_crypto_amount
+        formatted = format_crypto_amount(crypto_amount, crypto_symbol)
         
         logger.debug(f"💱 Converted ${usd_amount} USD → {formatted}")
         return crypto_amount, formatted
