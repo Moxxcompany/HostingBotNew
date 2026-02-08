@@ -75,12 +75,20 @@ class PaymentProviderFactory:
     
     @classmethod
     def get_backup_provider(cls) -> Union[DynoPayService, BlockBeeService]:
-        """Get the backup payment provider - DynoPay disabled, BlockBee only"""
-        provider_name = cls.get_provider_name()
+        """Get the backup payment provider - returns the opposite of the primary"""
+        primary = cls.get_primary_provider()
         
-        # DynoPay disabled - always use BlockBee as backup
-        logger.info("✅ Using BlockBee as backup payment provider (DynoPay disabled)")
-        return cls.get_blockbee_service()
+        if isinstance(primary, DynoPayService):
+            logger.info("Using BlockBee as backup payment provider")
+            return cls.get_blockbee_service()
+        else:
+            dynopay = cls.get_dynopay_service()
+            if dynopay.is_available():
+                logger.info("Using DynoPay as backup payment provider")
+                return dynopay
+            else:
+                logger.warning("Backup provider DynoPay not available, no backup available")
+                return cls.get_blockbee_service()
     
     @classmethod
     async def create_payment_address_with_fallback(cls, currency: str, order_id: str, value: Decimal, user_id: int) -> Optional[Dict]:
@@ -202,8 +210,7 @@ class PaymentProviderFactory:
                 result['status'] = 'new_address_created_atomic'
                 return result
         except Exception as e:
-            logger.error(f"❌ Primary provider ({provider_name}) failed for intent {intent_id}: {e}")
-            # Send admin alert for primary provider failure
+            logger.error(f"Primary provider ({provider_name}) raised exception for intent {intent_id}: {e}")
             await send_warning_alert(
                 provider_name.upper(),
                 f"Payment address creation failed - falling back to backup provider",
@@ -215,9 +222,12 @@ class PaymentProviderFactory:
                     "amount": str(value),
                     "intent_id": intent_id,
                     "error": str(e),
-                    "action": "Falling back to BlockBee"
+                    "action": "Falling back to backup provider"
                 }
             )
+        
+        # Primary returned None or raised - log and try backup
+        logger.warning(f"Primary provider ({provider_name}) failed for intent {intent_id} - attempting backup")
         
         # Step 5: Try backup provider if primary fails
         backup_provider = cls.get_backup_provider()

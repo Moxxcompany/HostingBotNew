@@ -5990,7 +5990,7 @@ async def claim_intent_for_address_creation(intent_id: int, provider_name: str, 
         try:
             await execute_update(
                 """INSERT INTO provider_claims 
-                   (order_id, provider, intent_id, idempotency_key, status) 
+                   (order_id, provider_name, intent_id, idempotency_key, status) 
                    VALUES (%s, %s, %s, %s, 'claiming')""",
                 (intent_data['order_id'], provider_name, intent_id, idempotency_key)
             )
