@@ -1360,15 +1360,23 @@ async def _process_wallet_deposit(order_id: str, payment_details: Dict[str, Any]
             # WALLET DEPOSIT LOGIC:
             # Gateway receives selected_amount + $2 padding for crypto price protection
             # We must subtract the $2 padding from received amount before crediting
-            # - If (received - $2) >= $10 minimum: credit (received - $2)
-            # - If (received - $2) < $10 minimum: reject deposit entirely
+            # Skip for USDT (stablecoin) — no padding was added
+            # - If (received - padding) >= $10 minimum: credit (received - padding)
+            # - If (received - padding) < $10 minimum: reject deposit entirely
             CRYPTO_PADDING = Decimal('2')
             MINIMUM_DEPOSIT = Decimal('10')
             
-            # Subtract the $2 crypto padding from received amount
-            amount_usd = amount_received - CRYPTO_PADDING
-            if amount_usd < Decimal('0'):
-                amount_usd = Decimal('0')
+            # Check if stablecoin (no padding was applied)
+            deposit_currency = str(payment_details.get('currency', '')).upper()
+            is_stablecoin = deposit_currency in ('USDT', 'USDT_TRC20', 'USDT_ERC20')
+            
+            # Subtract the $2 crypto padding from received amount (skip for stablecoins)
+            if is_stablecoin:
+                amount_usd = amount_received
+            else:
+                amount_usd = amount_received - CRYPTO_PADDING
+                if amount_usd < Decimal('0'):
+                    amount_usd = Decimal('0')
             
             if amount_usd < MINIMUM_DEPOSIT:
                 logger.warning(f"❌ WALLET DEPOSIT REJECTED: Received ${amount_received:.2f} - ${CRYPTO_PADDING} padding = ${amount_usd:.2f}, below minimum ${MINIMUM_DEPOSIT} for order {order_id}")
