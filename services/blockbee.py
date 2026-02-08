@@ -123,22 +123,41 @@ class BlockBeeService:
                         
                         logger.info(f"✅ BlockBee created payment address for {currency.upper()}: {address_in}")
                         
-                        # Calculate crypto amount using the same FastForex service as DynoPay
+                        # Get crypto amount from BlockBee's own convert API (like DynoPay does)
                         crypto_amount_display = 'TBD'
+                        crypto_amount = 0.0
                         try:
-                            from services.fastforex import fastforex_service
-                            crypto_amount, crypto_amount_display = await fastforex_service.get_usd_to_crypto_amount(
-                                value, currency.upper()
+                            # Call BlockBee's convert endpoint to get accurate crypto amount
+                            convert_response = await client.get(
+                                f"{self.base_url}/{currency.lower()}/convert/",
+                                params={
+                                    'apikey': self.api_key,
+                                    'value': str(value),
+                                    'from': 'usd'
+                                },
+                                timeout=10.0
                             )
-                            logger.info(f"📈 BlockBee real-time rate: ${value} USD = {crypto_amount_display}")
-                        except Exception as e:
-                            logger.warning(f"⚠️ FastForex failed for BlockBee, using fallback: {str(e)}")
-                            # Fallback to static rates if FastForex fails
+                            
+                            if convert_response.status_code == 200:
+                                convert_data = convert_response.json()
+                                if convert_data.get('status') == 'success':
+                                    crypto_amount = float(convert_data.get('value_coin', 0))
+                                    from pricing_utils import format_crypto_amount
+                                    crypto_amount_display = format_crypto_amount(crypto_amount, currency.upper())
+                                    logger.info(f"📈 BlockBee convert API: ${value} USD = {crypto_amount_display}")
+                                else:
+                                    raise Exception(f"BlockBee convert API error: {convert_data.get('error', 'Unknown')}")
+                            else:
+                                raise Exception(f"BlockBee convert API HTTP error: {convert_response.status_code}")
+                                
+                        except Exception as convert_error:
+                            logger.warning(f"⚠️ BlockBee convert API failed, using fallback: {str(convert_error)}")
+                            # Fallback to static rates if convert API fails
                             crypto_rates = {
-                                'BTC': 100000,     # ~$100k per BTC (Dec 2025)
-                                'ETH': 3000,       # ~$3k per ETH  
-                                'LTC': 83,         # ~$83 per LTC
-                                'DOGE': 0.14,      # ~$0.14 per DOGE
+                                'BTC': 100000,     # ~$100k per BTC
+                                'ETH': 2500,       # ~$2.5k per ETH (updated)
+                                'LTC': 100,        # ~$100 per LTC
+                                'DOGE': 0.10,      # ~$0.10 per DOGE
                                 'USDT': 1.0,       # ~$1 per USDT
                                 'USDT-ERC20': 1.0, # ~$1 per USDT
                                 'USDT-TRC20': 1.0  # ~$1 per USDT
