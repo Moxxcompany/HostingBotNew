@@ -1159,12 +1159,18 @@ async def _detect_and_process_overpayment(order_id: str, payment_details: Dict[s
         
         # Subtract $2 crypto padding from received amount before overpayment calculation
         # Gateway receives original_price + $2 for price protection — this $2 should not be credited
+        # Skip for USDT (stablecoin) — no padding was added
         CRYPTO_PADDING = Decimal('2')
         from decimal import Decimal as D
+        payment_currency = str(payment_details.get('currency', '')).upper()
+        is_stablecoin = payment_currency in ('USDT', 'USDT_TRC20', 'USDT_ERC20')
         try:
-            received_for_overpayment = D(str(received_amount)) - CRYPTO_PADDING
-            if received_for_overpayment < D('0'):
-                received_for_overpayment = D('0')
+            if is_stablecoin:
+                received_for_overpayment = D(str(received_amount))
+            else:
+                received_for_overpayment = D(str(received_amount)) - CRYPTO_PADDING
+                if received_for_overpayment < D('0'):
+                    received_for_overpayment = D('0')
         except:
             received_for_overpayment = D(str(received_amount))
         
