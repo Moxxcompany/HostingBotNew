@@ -9815,8 +9815,9 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
         order_id = f"wallet_fund_{db_order_id}"
         
         # Generate payment with configured provider (DynoPay/BlockBee)
-        # Add $2 crypto padding for price protection
-        gateway_amount = deposit_amount + Decimal('2')
+        # Skip $2 padding for USDT (stablecoin, no volatility)
+        is_stablecoin = crypto_type.lower() in ('usdt', 'usdt_trc20', 'usdt_erc20')
+        gateway_amount = deposit_amount if is_stablecoin else deposit_amount + Decimal('2')
         payment_result = await create_payment_address(
             currency=crypto_type.lower(),
             order_id=order_id,
