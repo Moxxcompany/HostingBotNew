@@ -951,7 +951,7 @@ class HostingBundleOrchestrator:
                 
                 kwargs.update({
                     'amount': f"{float(amount_usd):.2f}",
-                    'crypto_amount': f"{float(received_crypto):.6f}",
+                    'crypto_amount': format_crypto_amount(float(received_crypto), crypto_name).split(' ')[0],
                     'crypto_currency': crypto_name
                 })
         else:
