@@ -9356,9 +9356,10 @@ async def process_crypto_payment(query, crypto_type, domain_name, price, currenc
             resolve_user_language(user.id, user_lang_code)
         )
         
-        # Pass USD amount + $2 crypto padding to provider for price protection
+        # Skip $2 padding for USDT (stablecoin, no volatility)
         original_price = Decimal(str(float(price)))
-        gateway_price = original_price + Decimal('2')
+        is_stablecoin = crypto_type.lower() in ('usdt', 'usdt_trc20', 'usdt_erc20')
+        gateway_price = original_price if is_stablecoin else original_price + Decimal('2')
         
         # Generate payment with configured provider (DynoPay/BlockBee)
         order_id = f"domain_{domain_name}_{user.id}_{int(time.time())}"
