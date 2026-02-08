@@ -19444,9 +19444,10 @@ async def handle_rdp_crypto_currency(query, context, currency: str):
         currency_info = crypto_config.get_currency_by_code(currency)
         crypto_name = currency_info.get('name', currency.upper())
         
-        # Pass USD amount + $2 crypto padding to provider for price protection
+        # Skip $2 padding for USDT (stablecoin, no volatility)
         original_amount = Decimal(str(total_amount))
-        gateway_amount = original_amount + Decimal('2')
+        is_stablecoin = currency.lower() in ('usdt', 'usdt_trc20', 'usdt_erc20')
+        gateway_amount = original_amount if is_stablecoin else original_amount + Decimal('2')
         
         # Create payment address using unified infrastructure
         payment_result = await create_payment_address(
