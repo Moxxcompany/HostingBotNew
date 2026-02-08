@@ -7995,9 +7995,10 @@ async def process_unified_crypto_payment(query, crypto_type: str, subscription_i
         from database import get_or_create_user
         user_record = await get_or_create_user(telegram_id=user.id)
         
-        # Pass USD amount + $2 crypto padding to provider for price protection
+        # Skip $2 padding for USDT (stablecoin, no volatility)
         original_amount = Decimal(str(amount))
-        gateway_amount = original_amount + Decimal('2')
+        is_stablecoin = crypto_type.lower() in ('usdt', 'usdt_trc20', 'usdt_erc20')
+        gateway_amount = original_amount if is_stablecoin else original_amount + Decimal('2')
         
         # Generate payment address
         logger.info(f"💰 Generating {crypto_type.upper()} payment address for unified hosting: User {user.id}, Amount ${amount:.2f}, Subscription #{subscription_id}")
