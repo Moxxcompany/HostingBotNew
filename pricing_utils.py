@@ -282,6 +282,41 @@ def format_money(amount: Decimal, currency: str = "USD", include_currency: bool 
     
     return formatted_amount
 
+def format_crypto_amount(amount, currency_symbol: str) -> str:
+    """
+    Format crypto amount for display, stripping unnecessary trailing zeros.
+    Keeps at least 2 decimal places for readability.
+    
+    Examples:
+        10.0100 USDT-TRC20 → 10.01 USDT-TRC20
+        0.00012300 BTC     → 0.000123 BTC
+        0.003330 ETH       → 0.00333 ETH
+        5.0000 LTC         → 5.00 LTC
+    """
+    try:
+        amount = float(amount)
+    except (ValueError, TypeError):
+        return f"{amount} {currency_symbol}"
+    
+    # Choose initial precision based on magnitude
+    if amount >= 1:
+        formatted = f"{amount:.4f}"
+    elif amount >= 0.001:
+        formatted = f"{amount:.6f}"
+    else:
+        formatted = f"{amount:.8f}"
+    
+    # Strip trailing zeros but keep at least 2 decimal places
+    if '.' in formatted:
+        integer_part, decimal_part = formatted.split('.')
+        decimal_part = decimal_part.rstrip('0')
+        if len(decimal_part) < 2:
+            decimal_part = decimal_part.ljust(2, '0')
+        formatted = f"{integer_part}.{decimal_part}"
+    
+    return f"{formatted} {currency_symbol}"
+
+
 def format_price_display(pricing_info: Dict[str, Any], domain_name: str = "") -> str:
     """
     Format pricing information for user display
