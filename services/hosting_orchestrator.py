@@ -22,6 +22,7 @@ from database import (
     get_hosting_intent_by_id, finalize_hosting_provisioning
 )
 from localization import t_for_user
+from pricing_utils import format_crypto_amount
 
 logger = logging.getLogger(__name__)
 
