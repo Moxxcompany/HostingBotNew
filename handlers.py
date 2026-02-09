@@ -4269,7 +4269,7 @@ async def search_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Perform enhanced domain search with validation and warnings
     try:
         # Use enhanced validation to detect potential issues before registration
-        enhanced_result = await openprovider.check_domain_with_enhanced_validation(domain_name)
+        enhanced_result = await openprovider.check_domain_with_enhanced_validation(domain_name, telegram_username=user.username)
         
         if enhanced_result is None:
             # API error or no response - provide helpful fallback
