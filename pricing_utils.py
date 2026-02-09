@@ -124,7 +124,7 @@ def convert_eur_to_usd(eur_amount: Decimal) -> Decimal:
     
     return to_currency_decimal(converted_amount, "converted_amount")
 
-def calculate_marked_up_price(base_price: Decimal, currency: str = 'EUR', tld: Optional[str] = None, is_api_purchase: bool = False) -> Dict[str, Any]:
+def calculate_marked_up_price(base_price: Decimal, currency: str = 'EUR', tld: Optional[str] = None, is_api_purchase: bool = False, telegram_username: Optional[str] = None) -> Dict[str, Any]:
     """
     Calculate marked-up price with minimum price enforcement and TLD-specific surcharges
     
@@ -133,11 +133,12 @@ def calculate_marked_up_price(base_price: Decimal, currency: str = 'EUR', tld: O
         currency: Currency of base price (typically EUR)
         tld: Optional TLD (e.g., 'ca', 'com') for TLD-specific pricing
         is_api_purchase: If True, apply 10% discount for API purchases
+        telegram_username: Optional Telegram username for per-user pricing overrides
         
     Returns:
         Dict containing marked-up pricing information
     """
-    config = PricingConfig()
+    config = PricingConfig(telegram_username=telegram_username)
     base_price_decimal = to_currency_decimal(base_price, "base_price")
     
     # Convert to USD if needed
