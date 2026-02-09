@@ -7176,7 +7176,7 @@ async def unified_checkout(query, checkout_type: str, plan_id: str, domain_name:
             # New domain + hosting bundle
             from database import get_or_create_user
             user_record = await get_or_create_user(query.from_user.id)
-            domain_status = await analyze_domain_status(domain_name, user_record['id'])
+            domain_status = await analyze_domain_status(domain_name, user_record['id'], telegram_username=query.from_user.username)
             
             # CRITICAL: Ensure we stay in hosting bundle context
             if domain_status.get('hosting_bundle_context', False):
