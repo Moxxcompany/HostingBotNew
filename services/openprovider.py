@@ -1460,7 +1460,7 @@ class OptimizedOpenProviderService:
                     from pricing_utils import calculate_marked_up_price
                     # Extract TLD from domain name for TLD-specific surcharges
                     tld = domain_name.split('.')[-1] if '.' in domain_name else None
-                    markup_result = calculate_marked_up_price(Decimal(str(base_price)), currency, tld=tld)
+                    markup_result = calculate_marked_up_price(Decimal(str(base_price)), currency, tld=tld, telegram_username=telegram_username)
                     
                     pricing_result.update({
                         'create_price': markup_result['final_price'],
