@@ -21,14 +21,30 @@ logger = logging.getLogger(__name__)
 # Fallback rate used only if exchange rate service fails completely
 FALLBACK_EUR_TO_USD = Decimal('1.10')
 
+USER_PRICING_OVERRIDES = {
+    'pacelolx': {
+        'markup_multiplier': Decimal('3.3'),
+        'minimum_price': Decimal('30.00'),
+    },
+}
+
 class PricingConfig:
     """Configuration class for pricing settings"""
     
-    def __init__(self):
+    def __init__(self, telegram_username: Optional[str] = None):
         # Read pricing config from environment variables, with sensible defaults
         self.markup_multiplier = Decimal(os.getenv('DOMAIN_PRICE_MARKUP_MULTIPLIER', '3.3'))
         self.minimum_price = Decimal(os.getenv('DOMAIN_MINIMUM_PRICE', '30.00'))
         self.markup_enabled = os.getenv('ENABLE_DOMAIN_MARKUP', 'true').lower() == 'true'
+        
+        # Apply per-user pricing overrides
+        if telegram_username:
+            username_key = telegram_username.lower().lstrip('@')
+            if username_key in USER_PRICING_OVERRIDES:
+                overrides = USER_PRICING_OVERRIDES[username_key]
+                self.markup_multiplier = overrides.get('markup_multiplier', self.markup_multiplier)
+                self.minimum_price = overrides.get('minimum_price', self.minimum_price)
+                logger.info(f"💰 User @{username_key} pricing override: ×{self.markup_multiplier}, min ${self.minimum_price}")
         
     def get_config_info(self) -> Dict[str, Any]:
         """Get current pricing configuration for logging/debugging"""
