@@ -1487,7 +1487,7 @@ class OptimizedOpenProviderService:
         return pricing_result
 
     @monitor_performance("domain_pricing_check")
-    async def get_domain_pricing(self, domain_name: str, is_api_purchase: bool = False) -> Optional[Dict]:
+    async def get_domain_pricing(self, domain_name: str, is_api_purchase: bool = False, telegram_username: Optional[str] = None) -> Optional[Dict]:
         """Get pricing information for a domain - OPTIMIZED with caching
         
         Args:
