@@ -922,7 +922,7 @@ class OptimizedOpenProviderService:
         
         return payload, errors
 
-    async def check_domain_registration_eligibility(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def check_domain_registration_eligibility(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None, telegram_username: Optional[str] = None) -> Dict[str, Any]:
         """
         Enhanced domain eligibility check with duplicate prevention and similarity detection.
         
