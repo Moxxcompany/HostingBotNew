@@ -6724,7 +6724,7 @@ async def analyze_domain_status(domain_name: str, user_id: Optional[int] = None,
             
             # Check domain availability via OpenProvider
             openprovider = OpenProviderService()
-            check_result = await openprovider.check_domain_availability(domain_name)
+            check_result = await openprovider.check_domain_availability(domain_name, telegram_username=telegram_username)
             
             if check_result and check_result.get('available', True):
                 # Domain available for registration
