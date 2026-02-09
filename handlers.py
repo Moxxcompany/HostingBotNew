@@ -6969,7 +6969,7 @@ async def handle_new_domain_hosting(query, context, plan_id: str, domain_name: s
     
     # Get domain pricing
     user_record = await get_or_create_user(query.from_user.id)
-    domain_status = await analyze_domain_status(domain_name, user_record['id'])
+    domain_status = await analyze_domain_status(domain_name, user_record['id'], telegram_username=query.from_user.username)
     
     # CRITICAL: Check hosting bundle context first to prevent misrouting
     if domain_status.get('hosting_bundle_context', False):
