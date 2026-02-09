@@ -1346,7 +1346,7 @@ class OptimizedOpenProviderService:
             logger.error(f"❌ Exception type: {type(e)}")
             return None
     
-    async def check_domain_with_enhanced_validation(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def check_domain_with_enhanced_validation(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None, telegram_username: Optional[str] = None) -> Dict[str, Any]:
         """
         Enhanced domain checking that combines availability and eligibility validation.
         
