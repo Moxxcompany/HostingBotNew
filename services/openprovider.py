@@ -1150,7 +1150,7 @@ class OptimizedOpenProviderService:
             return ['Error analyzing TLD risks']
     
     @monitor_performance("domain_availability_check")
-    async def check_domain_availability(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
+    async def check_domain_availability(self, domain_name: str, contact_data: Optional[Dict[str, Any]] = None, telegram_username: Optional[str] = None) -> Optional[Dict]:
         """Check if a domain is available for registration - OPTIMIZED VERSION with TLD validation and CACHING"""
         try:
             # CRITICAL: Check if TLD is supported before making any API calls
