@@ -957,7 +957,7 @@ class OptimizedOpenProviderService:
                 result['recommendations'].append('Consider using a more unique domain name')
             
             # Step 3: Perform standard availability check
-            availability_result = await self.check_domain_availability(domain_name, contact_data)
+            availability_result = await self.check_domain_availability(domain_name, contact_data, telegram_username=telegram_username)
             result['availability_result'] = availability_result
             
             if not availability_result:
