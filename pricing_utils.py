@@ -25,11 +25,10 @@ class PricingConfig:
     """Configuration class for pricing settings"""
     
     def __init__(self):
-        # Hardcoded pricing config - set directly in code for deployment stability
-        # 230% markup = 3.3 multiplier
-        self.markup_multiplier = Decimal('3.3')
-        self.minimum_price = Decimal('30.00')
-        self.markup_enabled = True
+        # Read pricing config from environment variables, with sensible defaults
+        self.markup_multiplier = Decimal(os.getenv('DOMAIN_PRICE_MARKUP_MULTIPLIER', '3.3'))
+        self.minimum_price = Decimal(os.getenv('DOMAIN_MINIMUM_PRICE', '30.00'))
+        self.markup_enabled = os.getenv('ENABLE_DOMAIN_MARKUP', 'true').lower() == 'true'
         
     def get_config_info(self) -> Dict[str, Any]:
         """Get current pricing configuration for logging/debugging"""
