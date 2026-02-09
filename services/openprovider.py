@@ -1252,7 +1252,7 @@ class OptimizedOpenProviderService:
                         # Fallback to pricing API if domains/check didn't return pricing
                         if not price_info or price_info.get('create_price', 0) <= 0:
                             logger.info("💰 No price in domains/check; using pricing API fallback")
-                            fallback = await self.get_domain_pricing(domain_name)
+                            fallback = await self.get_domain_pricing(domain_name, telegram_username=telegram_username)
                             if fallback and fallback.get('create_price', 0) > 0:
                                 price_info = {
                                     'create_price': fallback['create_price'],
