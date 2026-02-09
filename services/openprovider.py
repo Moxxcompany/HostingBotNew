@@ -3861,15 +3861,16 @@ class OptimizedOpenProviderService:
             logger.error(f"❌ Error getting or creating contact handle: {e}")
             return None
     
-    async def get_domain_price(self, domain_name: str, period: int = 1, is_api_purchase: bool = False) -> Optional[Dict]:
+    async def get_domain_price(self, domain_name: str, period: int = 1, is_api_purchase: bool = False, telegram_username: Optional[str] = None) -> Optional[Dict]:
         """Get domain pricing (same as get_domain_pricing but with period support)
         
         Args:
             domain_name: Domain name to get pricing for
             period: Registration period in years (currently ignored as markup is applied per year)
             is_api_purchase: If True, apply 10% API discount
+            telegram_username: Optional Telegram username for per-user pricing overrides
         """
-        return await self.get_domain_pricing(domain_name, is_api_purchase=is_api_purchase)
+        return await self.get_domain_pricing(domain_name, is_api_purchase=is_api_purchase, telegram_username=telegram_username)
     
     async def get_domain_info(self, domain_id: str) -> Optional[Dict]:
         """Get domain information by OpenProvider domain ID"""
