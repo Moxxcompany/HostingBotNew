@@ -12953,7 +12953,7 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         
         # Perform actual domain search
         try:
-            availability = await openprovider.check_domain_availability(domain_name)
+            availability = await openprovider.check_domain_availability(domain_name, telegram_username=user.username)
             
             if availability is None:
                 # API error or no response - provide helpful fallback
