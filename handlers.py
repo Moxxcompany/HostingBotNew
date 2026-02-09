@@ -6663,7 +6663,7 @@ def _get_estimated_domain_price(tld: str) -> float:
     # Return estimated price or default for unknown TLDs
     return tld_estimates.get(tld.lower(), 15.99)  # Default to $15.99 for unknown TLDs
 
-async def analyze_domain_status(domain_name: str, user_id: Optional[int] = None) -> Dict[str, Any]:
+async def analyze_domain_status(domain_name: str, user_id: Optional[int] = None, telegram_username: Optional[str] = None) -> Dict[str, Any]:
     """
     Comprehensive domain analysis with 3-table state management system
     Checks: ownership_state in domains table, active intents, OpenProvider availability
