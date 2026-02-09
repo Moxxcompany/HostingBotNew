@@ -1567,7 +1567,8 @@ class OptimizedOpenProviderService:
                                 Decimal(str(create_price)), 
                                 currency, 
                                 tld=tld,
-                                is_api_purchase=is_api_purchase
+                                is_api_purchase=is_api_purchase,
+                                telegram_username=telegram_username
                             )
                             
                             # Cache TLD pricing for future use (only for bot purchases, not API)
