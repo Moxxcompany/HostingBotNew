@@ -9242,12 +9242,7 @@ async def start_domain_registration(query, domain_name):
         # Get user language for error messages
         user_lang = await resolve_user_language(user.id, user.language_code if hasattr(user, 'language_code') else None)
         
-        availability = await openprovider.check_domain_availability(domain_name)
-        if not availability or not availability.get('available'):
-            await safe_edit_message(query, t('hosting.domain_unavailable', user_lang, domain=domain_name))
-            return
-        
-        # Get pricing
+        availability = await openprovider.check_domain_availability(domain_name, telegram_username=user.username)
         price_info = availability.get('price_info', {})
         create_price = price_info.get('create_price', 0)
         currency = price_info.get('currency', 'USD')
