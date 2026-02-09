@@ -6594,9 +6594,7 @@ async def smart_domain_handler(query, context, plan_id: str, domain_text: Option
             
             # Check if domain is already registered
             user_record = await get_or_create_user(query.from_user.id)
-            domain_status = await analyze_domain_status(domain_name, user_record['id'])
-            
-            # CRITICAL: Use bulletproof hosting context enforcement guard
+            domain_status = await analyze_domain_status(domain_name, user_record['id'], telegram_username=query.from_user.username)
             if enforce_hosting_context(domain_status, domain_name, "smart domain handler"):
                 # MANDATORY: Route to hosting handlers using centralized enforcement
                 if domain_status['exists']:
