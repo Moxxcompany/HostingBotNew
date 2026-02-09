@@ -17548,11 +17548,7 @@ async def process_bundle_domain_search(update: Update, context: ContextTypes.DEF
             searching_msg = await message.reply_text(f"🔄 {t('wallet.searching_bundle', user_lang, domain=domain_name)}")
         
         # Check domain availability
-        availability = await openprovider.check_domain_availability(domain_name)
-        
-        if availability is None:
-            response_text = t('errors.service_temporarily_down', user_lang)
-            keyboard = [
+        availability = await openprovider.check_domain_availability(domain_name, telegram_username=user.username)
                 [InlineKeyboardButton(t("buttons.try_again", user_lang), callback_data=f"bundle_plan_{plan_id}")],
                 [InlineKeyboardButton(t("buttons.back_to_bundle", user_lang), callback_data="domain_hosting_bundle")]
             ]
