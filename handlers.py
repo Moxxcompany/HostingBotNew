@@ -6741,7 +6741,7 @@ async def analyze_domain_status(domain_name: str, user_id: Optional[int] = None,
                     # Fallback: Use estimated pricing based on TLD
                     tld = domain_name.split('.')[-1] if '.' in domain_name else 'com'
                     estimated_price = _get_estimated_domain_price(tld)
-                    registration_price = calculate_marked_up_price(Decimal(str(estimated_price)), 'USD', tld=tld)['final_price']
+                    registration_price = calculate_marked_up_price(Decimal(str(estimated_price)), 'USD', tld=tld, telegram_username=telegram_username)['final_price']
                     logger.warning(f"⚠️ No pricing from provider for {domain_name}, using estimated ${estimated_price:.2f} → ${registration_price:.2f}")
                 
                 search_result = {
