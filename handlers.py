@@ -17644,12 +17644,7 @@ async def confirm_bundle_purchase(query, plan_id: str, domain_name: str):
         monthly_price = plan.get('monthly_price', 0)
         
         # Get final domain pricing
-        availability = await openprovider.check_domain_availability(domain_name)
-        if not availability or not availability.get('available'):
-            await safe_edit_message(query, t('hosting.domain_unavailable', user_lang, domain=domain_name))
-            return
-        
-        domain_price = availability.get('price_info', {}).get('create_price', 0)
+        availability = await openprovider.check_domain_availability(domain_name, telegram_username=user.username)
         bundle_total = domain_price + monthly_price
         
         # Create database user record
