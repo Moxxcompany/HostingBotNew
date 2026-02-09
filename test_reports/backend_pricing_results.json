@@ -1,79 +1,79 @@
 {
-  "test_run_timestamp": "2026-02-09T16:34:11.593495",
+  "test_run_timestamp": "2026-02-09T16:35:20.773071",
   "total_tests": 10,
-  "tests_passed": 5,
-  "tests_failed": 5,
-  "success_rate": 50.0,
+  "tests_passed": 10,
+  "tests_failed": 0,
+  "success_rate": 100.0,
   "all_tests_results": [
     {
-      "test_name": "Health Endpoint",
-      "success": false,
-      "details": "",
-      "error": "All health endpoints failed to return 200",
-      "timestamp": "2026-02-09T16:34:11.592603"
+      "test_name": "Health Endpoint /health",
+      "success": true,
+      "details": "Status: 200, Response length: 327 chars",
+      "error": "",
+      "timestamp": "2026-02-09T16:35:20.772791"
     },
     {
       "test_name": "USER_PRICING_OVERRIDES Dict",
       "success": true,
       "details": "Key: pacelolx, Multiplier: 3.3, Minimum: $30.00",
       "error": "",
-      "timestamp": "2026-02-09T16:34:11.593256"
+      "timestamp": "2026-02-09T16:35:20.772874"
     },
     {
       "test_name": "PricingConfig Defaults",
-      "success": false,
-      "details": "Multiplier: 3.3, Minimum: $30.00, Enabled: True",
-      "error": "Expected multiplier 2.5, min $25.00, enabled True",
-      "timestamp": "2026-02-09T16:34:11.593288"
+      "success": true,
+      "details": "Multiplier: 2.5, Minimum: $25, Enabled: True",
+      "error": "",
+      "timestamp": "2026-02-09T16:35:20.772892"
     },
     {
       "test_name": "PricingConfig pacelolx Override",
       "success": true,
       "details": "Username: pacelolx, Multiplier: 3.3, Minimum: $30.00",
       "error": "",
-      "timestamp": "2026-02-09T16:34:11.593313"
+      "timestamp": "2026-02-09T16:35:20.772910"
     },
     {
       "test_name": "PricingConfig @pacelolx Override",
       "success": true,
       "details": "Username: @pacelolx, Multiplier: 3.3, Minimum: $30.00",
       "error": "",
-      "timestamp": "2026-02-09T16:34:11.593331"
+      "timestamp": "2026-02-09T16:35:20.772924"
     },
     {
       "test_name": "PricingConfig Random User",
-      "success": false,
-      "details": "Username: randomuser, Multiplier: 3.3, Minimum: $30.00",
-      "error": "Expected multiplier 2.5, min $25.00 (defaults)",
-      "timestamp": "2026-02-09T16:34:11.593346"
+      "success": true,
+      "details": "Username: randomuser, Multiplier: 2.5, Minimum: $25",
+      "error": "",
+      "timestamp": "2026-02-09T16:35:20.772936"
     },
     {
       "test_name": "calculate_marked_up_price Default",
-      "success": false,
-      "details": "Base: $10.00, Final: $33.00, Multiplier: 3.3",
-      "error": "Expected final price ~$25.00, multiplier 2.5",
-      "timestamp": "2026-02-09T16:34:11.593394"
+      "success": true,
+      "details": "Base: $10.00, Final: $25.00, Multiplier: 2.5",
+      "error": "",
+      "timestamp": "2026-02-09T16:35:20.772978"
     },
     {
       "test_name": "calculate_marked_up_price pacelolx",
       "success": true,
       "details": "Base: $10.00, Final: $33.00, Multiplier: 3.3",
       "error": "",
-      "timestamp": "2026-02-09T16:34:11.593423"
+      "timestamp": "2026-02-09T16:35:20.773005"
     },
     {
       "test_name": "$25 Minimum Enforcement Default",
-      "success": false,
-      "details": "Base: $5.00, Final: $30.00, Min enforced: True",
-      "error": "Expected final price $25.00 with minimum enforced",
-      "timestamp": "2026-02-09T16:34:11.593449"
+      "success": true,
+      "details": "Base: $5.00, Final: $25.00, Min enforced: True",
+      "error": "",
+      "timestamp": "2026-02-09T16:35:20.773028"
     },
     {
       "test_name": "$30 Minimum Enforcement @pacelolx",
       "success": true,
       "details": "Base: $5.00, Final: $30.00, Min enforced: True",
       "error": "",
-      "timestamp": "2026-02-09T16:34:11.593474"
+      "timestamp": "2026-02-09T16:35:20.773050"
     }
   ]
 }
