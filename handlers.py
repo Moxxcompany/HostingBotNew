@@ -9032,7 +9032,7 @@ async def handle_new_domain_with_hosting(update: Update, context: ContextTypes.D
             return
         searching_msg = await message.reply_text(f"🔄 Checking {domain_name}...")
         
-        availability = await openprovider.check_domain_availability(domain_name)
+        availability = await openprovider.check_domain_availability(domain_name, telegram_username=user.username)
         
         if availability is None:
             await searching_msg.edit_text(t('errors.service_temporarily_down', user_lang))
