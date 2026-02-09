@@ -1409,7 +1409,7 @@ class OptimizedOpenProviderService:
                 'recommendation_message': 'Unable to validate domain due to system error'
             }
 
-    def _extract_price_from_domain_check(self, domain_info: Dict, domain_name: str) -> Dict:
+    def _extract_price_from_domain_check(self, domain_info: Dict, domain_name: str, telegram_username: Optional[str] = None) -> Dict:
         """Extract and process pricing from domains/check response"""
         pricing_result = {
             'create_price': 0,
