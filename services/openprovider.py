@@ -1360,7 +1360,7 @@ class OptimizedOpenProviderService:
         
         try:
             # Step 1: Check eligibility first (includes similarity detection)
-            eligibility_result = await self.check_domain_registration_eligibility(domain_name, contact_data)
+            eligibility_result = await self.check_domain_registration_eligibility(domain_name, contact_data, telegram_username=telegram_username)
             
             # Step 2: Combine with availability data
             availability_data = eligibility_result.get('availability_result')
