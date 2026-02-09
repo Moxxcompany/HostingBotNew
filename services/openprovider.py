@@ -1506,8 +1506,13 @@ class OptimizedOpenProviderService:
                 return None
             
             # Check TLD price cache first (but only if not API purchase, as we need to apply discount)
+            # Also skip cache when per-user pricing overrides are active
             tld = domain_parts['extension']
-            if not is_api_purchase:
+            has_user_override = False
+            if telegram_username:
+                from pricing_utils import USER_PRICING_OVERRIDES
+                has_user_override = telegram_username.lower().lstrip('@') in USER_PRICING_OVERRIDES
+            if not is_api_purchase and not has_user_override:
                 cached_pricing = _tld_price_cache.get(tld)
                 if cached_pricing:
                     logger.info(f"🚀 Using cached TLD pricing for {tld}: ${cached_pricing['create_price']:.2f}")
