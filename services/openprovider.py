@@ -1247,7 +1247,7 @@ class OptimizedOpenProviderService:
                         is_premium = domain_info.get('premium', False)
                         
                         # Extract pricing using optimized method
-                        price_info = self._extract_price_from_domain_check(domain_info, domain_name)
+                        price_info = self._extract_price_from_domain_check(domain_info, domain_name, telegram_username=telegram_username)
                         
                         # Fallback to pricing API if domains/check didn't return pricing
                         if not price_info or price_info.get('create_price', 0) <= 0:
