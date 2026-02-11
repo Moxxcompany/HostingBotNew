@@ -511,6 +511,11 @@ async def lifespan(app: FastAPI):
         bot_app.add_handler(CommandHandler("cancel", cancel_command))
         bot_app.add_handler(CommandHandler("maintenance", maintenance_command))
         
+        # Promo opt-out/opt-in and timezone commands
+        bot_app.add_handler(CommandHandler("stop_promos", stop_promos_command))
+        bot_app.add_handler(CommandHandler("start_promos", start_promos_command))
+        bot_app.add_handler(CommandHandler("set_timezone", set_timezone_command))
+        
         # Callback and message handlers
         bot_app.add_handler(CallbackQueryHandler(handle_callback))
         
