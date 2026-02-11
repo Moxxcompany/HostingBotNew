@@ -91,10 +91,13 @@ class PaymentProviderFactory:
                 return cls.get_blockbee_service()
     
     @classmethod
-    async def create_payment_address_with_fallback(cls, currency: str, order_id: str, value: Decimal, user_id: int) -> Optional[Dict]:
+    async def create_payment_address_with_fallback(cls, currency: str, order_id: str, value: Decimal, user_id: int, base_amount: Decimal = None) -> Optional[Dict]:
         """
         Create payment address with atomic concurrency protection using CAS pattern
         FIXED: Prevents race conditions that could create multiple external addresses
+        
+        Args:
+            base_amount: Original user-intended amount BEFORE crypto padding. If None, defaults to value.
         """
         logger.info(f"🔒 ATOMIC: Creating payment address for order {order_id}, amount: ${value}, currency: {currency}")
         
