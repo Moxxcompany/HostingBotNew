@@ -316,9 +316,9 @@ class PaymentProviderFactory:
         return None
 
 # Convenience functions for direct usage
-async def create_payment_address(currency: str, order_id: str, value: Decimal, user_id: int) -> Optional[Dict]:
+async def create_payment_address(currency: str, order_id: str, value: Decimal, user_id: int, base_amount: Decimal = None) -> Optional[Dict]:
     """Create payment address using the configured provider with fallback"""
-    return await PaymentProviderFactory.create_payment_address_with_fallback(currency, order_id, value, user_id)
+    return await PaymentProviderFactory.create_payment_address_with_fallback(currency, order_id, value, user_id, base_amount=base_amount)
 
 async def check_payment_status(currency: str, payment_address: str) -> Optional[Dict]:
     """Check payment status using available providers"""
