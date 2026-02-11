@@ -8,7 +8,7 @@ Runs hourly via APScheduler, selects users whose local time matches the target h
 Schedule (in user's local time):
   - 10:00 AM → Offshore DMCA-ignored domains
   - 15:00 PM → Offshore cPanel hosting
-  - 20:00 PM → URL shortener + @nomadlybot
+  - 20:00 PM → Windows RDP servers
 
 Features:
   - AI-generated dynamic messages via OpenAI GPT-4o-mini (friendly, varied copy)
@@ -17,7 +17,6 @@ Features:
   - Respects user's preferred_language (en/es/fr)
   - Respects timezone_offset for local-time delivery
   - Respects promo_opted_out flag (/stop_promos)
-  - @nomadlybot cross-promotion footer on every message
 """
 
 import asyncio
@@ -52,7 +51,7 @@ def _sanitize_html(text: str) -> str:
 PROMO_SLOTS = {
     10: "offshore_domains",   # 10 AM local
     15: "offshore_hosting",   # 3 PM local
-    20: "url_shortener",      # 8 PM local
+    20: "rdp_servers",        # 8 PM local
 }
 
 # Hourly cache: key = "YYYY-MM-DD-HH:theme:lang" → generated message
@@ -67,11 +66,10 @@ THEME_BRIEFS = {
             ".is (Iceland), .ru (Russia), .md (Moldova), .ws (Samoa), .to (Tonga), "
             ".cc (Cocos Islands), .sx (Sint Maarten), .ly (Libya), .ro (Romania), .bg (Bulgaria). "
             "Prices from $2.99/year. No DMCA takedowns. "
-            "Users type /start to search & register. "
-            "For hardened DMCA-proof domains via a dedicated offshore registrar, direct users to @nomadlybot."
+            "Users type /start to search & register."
         ),
         "cta_options": [
-            "Country TLDs → /start right here | DMCA-hardened domains → @nomadlybot",
+            "Use /start to search & register your offshore domain",
         ],
     },
     "offshore_hosting": {
@@ -88,17 +86,18 @@ THEME_BRIEFS = {
             "/start to explore hosting plans",
         ],
     },
-    "url_shortener": {
-        "product": "Custom URL Shortener via @nomadlybot",
+    "rdp_servers": {
+        "product": "Windows RDP Servers (Offshore Cloud VPS)",
         "details": (
-            "@nomadlybot offers: custom short URLs on your own branded domain, "
-            "bulk shortening, click analytics (locations, devices, referrers), "
-            "DMCA-free domains for your shortener, API access. "
-            "Perfect for marketers and content creators who need unrestricted link management. "
-            "Users can also register an offshore domain through HostBay (/start) to use with the shortener."
+            "HostBay offers Windows RDP servers powered by Vultr cloud infrastructure. "
+            "Multiple plans available with SSD storage, dedicated vCPUs, and full admin access. "
+            "Global locations: US, Europe, Asia, South America. "
+            "Perfect for remote desktop work, running bots, automation, or hosting Windows apps offshore. "
+            "Plans start from affordable monthly pricing. "
+            "Users type /start to browse RDP plans and deploy instantly."
         ),
         "cta_options": [
-            "Start at → @nomadlybot | Register a domain → /start",
+            "Use /start to browse RDP server plans",
         ],
     },
 }
@@ -106,7 +105,7 @@ THEME_BRIEFS = {
 LANG_NAMES = {"en": "English", "es": "Spanish", "fr": "French"}
 
 SYSTEM_PROMPT = """\
-You are a friendly, persuasive copywriter for HostBay, an offshore hosting & domain service.
+You are a friendly, persuasive copywriter for HostBay, an offshore hosting & domain service on Telegram.
 
 Rules:
 - Write ONE short promotional message (max 800 chars) using ONLY Telegram HTML tags.
@@ -117,6 +116,7 @@ Rules:
 - Include the key product facts but rephrase naturally — don't just list specs robotically.
 - End with a clear call-to-action using the provided CTA.
 - Do NOT add any footer, separator lines, or opt-out text — those are appended automatically.
+- Do NOT mention @nomadlybot or any other bots. Only promote HostBay services.
 - Max 2-3 emoji per message. Keep it clean.
 - Write entirely in {language}.\
 """
@@ -175,7 +175,7 @@ def _build_static_message(theme: str, lang: str) -> str:
 
 
 def _append_footer(message: str, lang: str) -> str:
-    """Append the @nomadlybot footer to any message."""
+    """Append the HostBay footer to any message."""
     footer = t('promo.common.footer', lang)
     return f"{message}\n\n{footer}"
 
