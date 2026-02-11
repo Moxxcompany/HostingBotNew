@@ -20775,3 +20775,93 @@ async def handle_rdp_delete(query, context, server_id: str):
         logger.error(f"Error deleting RDP server: {e}")
         user = query.from_user
         await safe_edit_message(query, await t_for_user('rdp.errors.delete_error', user.id))
+
+
+# =============================================================================
+# PROMOTIONAL BROADCAST: Opt-out / Opt-in commands
+# =============================================================================
+
+async def stop_promos_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /stop_promos command - opt out of promotional broadcasts."""
+    user = update.effective_user
+    if not user:
+        return
+    
+    try:
+        from database import set_user_promo_opt_out_by_telegram_id
+        lang = await get_user_lang(user.id)
+        
+        success = await set_user_promo_opt_out_by_telegram_id(user.id, True)
+        
+        if success:
+            msg = t('promo.opt_out.success', lang)
+        else:
+            msg = t('promo.opt_out.error', lang)
+        
+        await update.message.reply_text(msg, parse_mode='HTML')
+    except Exception as e:
+        logger.error(f"Error in /stop_promos for user {user.id}: {e}")
+        await update.message.reply_text("An error occurred. Please try again.", parse_mode='HTML')
+
+
+async def start_promos_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /start_promos command - opt back in to promotional broadcasts."""
+    user = update.effective_user
+    if not user:
+        return
+    
+    try:
+        from database import set_user_promo_opt_out_by_telegram_id
+        lang = await get_user_lang(user.id)
+        
+        success = await set_user_promo_opt_out_by_telegram_id(user.id, False)
+        
+        if success:
+            msg = t('promo.opt_in.success', lang)
+        else:
+            msg = t('promo.opt_in.error', lang)
+        
+        await update.message.reply_text(msg, parse_mode='HTML')
+    except Exception as e:
+        logger.error(f"Error in /start_promos for user {user.id}: {e}")
+        await update.message.reply_text("An error occurred. Please try again.", parse_mode='HTML')
+
+
+async def set_timezone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /set_timezone command - set user's timezone offset for promo delivery."""
+    user = update.effective_user
+    if not user:
+        return
+    
+    try:
+        from database import set_user_timezone_offset
+        lang = await get_user_lang(user.id)
+        
+        # Parse timezone offset from command args (e.g., /set_timezone +3, /set_timezone -5)
+        if not context.args:
+            msg = t('promo.timezone.usage', lang)
+            await update.message.reply_text(msg, parse_mode='HTML')
+            return
+        
+        try:
+            offset = int(context.args[0].replace('+', ''))
+            if offset < -12 or offset > 14:
+                raise ValueError("Offset out of range")
+        except (ValueError, IndexError):
+            msg = t('promo.timezone.invalid', lang)
+            await update.message.reply_text(msg, parse_mode='HTML')
+            return
+        
+        success = await set_user_timezone_offset(user.id, offset)
+        
+        if success:
+            sign = '+' if offset >= 0 else ''
+            msg = t('promo.timezone.success', lang, offset=f"UTC{sign}{offset}")
+        else:
+            msg = t('promo.timezone.error', lang)
+        
+        await update.message.reply_text(msg, parse_mode='HTML')
+    except Exception as e:
+        logger.error(f"Error in /set_timezone for user {user.id}: {e}")
+        await update.message.reply_text("An error occurred. Please try again.", parse_mode='HTML')
+
