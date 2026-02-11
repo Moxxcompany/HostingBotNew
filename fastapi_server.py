@@ -1245,39 +1245,20 @@ async def lifespan(app: FastAPI):
         except Exception as hosting_job_error:
             logger.warning(f"⚠️ Failed to schedule hosting order job processor: {hosting_job_error}")
         
-        # Schedule promotional broadcasts (3x daily)
-        # Morning: Offshore DMCA-ignored domains, Afternoon: Offshore hosting, Evening: URL shortener
+        # Schedule promotional broadcasts (hourly check for timezone-aware delivery)
+        # Runs every hour, sends promos to users whose local time matches 10AM/3PM/8PM
         try:
-            from promotional_broadcasts import send_morning_promo, send_afternoon_promo, send_evening_promo
+            from promotional_broadcasts import run_hourly_promo_check
             
             scheduler.add_job(
-                send_morning_promo,
+                run_hourly_promo_check,
                 'cron',
-                hour=9,
                 minute=0,
-                id='promo_morning_offshore_domains',
-                name='Morning Promo: Offshore Domains',
+                id='promo_hourly_timezone_check',
+                name='Hourly Promo: Timezone-Aware Dispatch',
                 replace_existing=True
             )
-            scheduler.add_job(
-                send_afternoon_promo,
-                'cron',
-                hour=15,
-                minute=0,
-                id='promo_afternoon_offshore_hosting',
-                name='Afternoon Promo: Offshore Hosting',
-                replace_existing=True
-            )
-            scheduler.add_job(
-                send_evening_promo,
-                'cron',
-                hour=21,
-                minute=0,
-                id='promo_evening_url_shortener',
-                name='Evening Promo: URL Shortener',
-                replace_existing=True
-            )
-            logger.info("✅ Scheduled: Promotional broadcasts 3x daily (9AM, 3PM, 9PM UTC)")
+            logger.info("✅ Scheduled: Promotional broadcasts (hourly timezone-aware check)")
         except Exception as promo_error:
             logger.warning(f"⚠️ Failed to schedule promotional broadcasts: {promo_error}")
         
