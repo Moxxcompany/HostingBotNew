@@ -1317,6 +1317,16 @@ async def lifespan(app: FastAPI):
     
     # Cleanup
     try:
+        # Stop event-driven job processors
+        for task_name, task in [('domain_processor', domain_processor_task), ('hosting_processor', hosting_processor_task)]:
+            if task and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+                logger.info(f"✅ Stopped {task_name} task")
+        
         # Stop APScheduler if it exists
         if 'scheduler' in locals() and scheduler:
             try:
