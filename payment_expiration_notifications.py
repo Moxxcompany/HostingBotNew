@@ -70,16 +70,34 @@ async def send_expiration_notifications(expired_payments: List[Dict[str, Any]]) 
                 crypto_currency = payment.get('crypto_currency', 'crypto').upper()
                 amount = float(payment.get('amount') or 0)
                 
+                # FIX: Subtract $2 crypto padding for non-stablecoin payments
+                # The payment_intents.amount includes a $2 volatility padding added at payment creation
+                # Notifications should show the user's original intended amount, not the padded gateway amount
+                CRYPTO_PADDING = 2.0
+                stablecoins = ('USDT', 'USDT_TRC20', 'USDT_ERC20')
+                if crypto_currency and crypto_currency.upper() not in stablecoins and amount > CRYPTO_PADDING:
+                    amount = amount - CRYPTO_PADDING
+                
                 title = t('notifications.payment.expired_single_title', lang)
                 body = t('notifications.payment.expired_single_body', lang,
                         amount=f"{amount:.2f}",
                         crypto_currency=crypto_currency)
                 message = f"{title}\n\n{body}"
             else:
-                # Multiple payments
+                # Multiple payments - subtract padding from each non-stablecoin payment
+                CRYPTO_PADDING = 2.0
+                stablecoins = ('USDT', 'USDT_TRC20', 'USDT_ERC20')
+                adjusted_total = 0.0
+                for p in payments:
+                    p_amount = float(p.get('amount') or 0)
+                    p_crypto = (p.get('crypto_currency') or '').upper()
+                    if p_crypto and p_crypto not in stablecoins and p_amount > CRYPTO_PADDING:
+                        p_amount = p_amount - CRYPTO_PADDING
+                    adjusted_total += p_amount
+                
                 title = t('notifications.payment.expired_multiple_title', lang, count=payment_count)
                 body = t('notifications.payment.expired_multiple_body', lang,
-                        total=f"{total_amount:.2f}",
+                        total=f"{adjusted_total:.2f}",
                         count=payment_count)
                 message = f"{title}\n\n{body}"
             
