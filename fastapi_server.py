@@ -29,11 +29,26 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 # Configure logging early to capture all startup logs including lifespan
-logging.basicConfig(
-    format='%(asctime)s %(levelname)s %(name)s: %(message)s',
-    level=logging.INFO,
-    force=True
-)
+# OPTIMIZED: Single structured JSON log format (eliminated duplicate plain-text logging)
+# This halves log volume on Railway — every message was being written twice before
+import json as _json
+from datetime import datetime as _dt, timezone as _tz
+
+class _JsonLogFormatter(logging.Formatter):
+    """Single structured JSON log format for production"""
+    def format(self, record):
+        log_data = {
+            'timestamp': _dt.fromtimestamp(record.created, _tz.utc).isoformat(),
+            'level': record.levelname,
+            'component': record.name,
+            'message': record.getMessage(),
+        }
+        return _json.dumps(log_data, default=str)
+
+_handler = logging.StreamHandler()
+_handler.setFormatter(_JsonLogFormatter())
+logging.root.handlers = [_handler]
+logging.root.setLevel(logging.INFO)
 
 # SECURITY: Prevent bot token leakage in HTTP request logs
 logging.getLogger("httpx").setLevel(logging.WARNING)
