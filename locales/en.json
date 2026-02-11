@@ -2015,25 +2015,37 @@
   },
   "promo": {
     "offshore_domains": {
-      "title": "<b>OFFSHORE DMCA-IGNORED DOMAINS</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Register <b>country-level TLD domains</b> with HostBay:\n\n<code>.is   </code> Iceland\n<code>.ru   </code> Russia\n<code>.md   </code> Moldova\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Cocos Islands\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libya\n<code>.ro   </code> Romania\n<code>.bg   </code> Bulgaria\n\nNo content restrictions. Full control over your digital presence.\nPrices starting from <b>$2.99/year</b> depending on TLD.\n\nUse /start to search and register your domain.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\nNeed <b>stronger DMCA-ignored protection</b>?\n\n@nomadlybot offers domain registration from a dedicated <b>offshore DMCA-free provider</b> — built specifically for projects that require maximum takedown resistance.",
-      "cta": "Country TLDs: Use /start right here\nDMCA-hardened domains: Head to @nomadlybot",
-      "footer": "<i>HostBay — Your Offshore Digital Infrastructure</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE DOMAINS</b>\n<b>DMCA-Ignored Registration</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Register <b>country-level TLD domains</b> directly through HostBay:\n\n<code> .is </code>  Iceland       <code> .ru </code>  Russia\n<code> .md </code>  Moldova     <code> .ws </code>  Samoa\n<code> .to </code>  Tonga         <code> .cc </code>  Cocos Islands\n<code> .sx </code>  Sint Maarten  <code> .ly </code>  Libya\n<code> .ro </code>  Romania      <code> .bg </code>  Bulgaria\n\n<b>Why go offshore?</b>\n<i>No DMCA takedowns. No content policing.\nFull sovereignty over your digital assets.</i>\n\nPrices from <b>$2.99/year</b> — varies by TLD.\n\n<b>Use /start to search &amp; register instantly.</b>\n\n━━━━━━━━━━━━━━━━━━━\n\nNeed <b>hardened DMCA-proof domains</b>?\n\n@nomadlybot provides registration through a <b>dedicated offshore DMCA-free registrar</b> — purpose-built for maximum takedown resistance.",
+      "cta": "<b>Country TLDs</b> → Use <code>/start</code> right here\n<b>DMCA-hardened domains</b> → @nomadlybot"
     },
     "offshore_hosting": {
-      "title": "<b>OFFSHORE cPANEL HOSTING</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Host your website on <b>DMCA-ignored offshore servers</b> with full cPanel access.\n\nWhat you get:\n\n<b>Starter Plan</b> - $4.99/mo\nSSD Storage + Unlimited Bandwidth\n\n<b>Professional Plan</b> - $9.99/mo\nMore Power + Priority Support\n\n<b>Business Plan</b> - $19.99/mo\nMaximum Resources + Dedicated IP\n\nAll plans include:\nFull cPanel Control Panel\nOne-Click WordPress Install\nFree SSL Certificates\nDMCA-Ignored Infrastructure\n99.9% Uptime Guarantee",
-      "cta": "Get started with offshore hosting today.\n\nUse /start to explore hosting plans.",
-      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE cPANEL HOSTING</b>\n<b>DMCA-Ignored Servers</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Host on <b>offshore infrastructure</b> with full cPanel control:\n\n<b>STARTER</b> — <code>$4.99/mo</code>\nSSD Storage · Unlimited Bandwidth\n\n<b>PROFESSIONAL</b> — <code>$9.99/mo</code>\nMore Power · Priority Support\n\n<b>BUSINESS</b> — <code>$19.99/mo</code>\nMax Resources · Dedicated IP\n\n<i>Every plan includes:</i>\n✓ Full cPanel Control Panel\n✓ One-Click WordPress\n✓ Free SSL Certificates\n✓ DMCA-Ignored Infrastructure\n✓ 99.9% Uptime SLA",
+      "cta": "<b>Use /start to explore hosting plans.</b>"
     },
     "url_shortener": {
-      "title": "<b>CUSTOM URL SHORTENER + DOMAIN REGISTRATION</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Looking for a <b>Bitly alternative</b> with your own custom domain?\n\n@nomadlybot offers:\n\nCustom Short URLs - Use your own domain for branded links\nBulk URL Shortening - Shorten hundreds of links at once\nClick Analytics - Track clicks, locations, and devices\nDMCA-Free Domains - Register offshore domains for your shortener\nAPI Access - Integrate with your apps and workflows\n\nPerfect for marketers, content creators, and businesses that need link management without restrictions.",
-      "cta": "Start shortening URLs at @nomadlybot\n\nRegister a DMCA-ignored domain and set up your own custom URL shortener in minutes.",
-      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>CUSTOM URL SHORTENER</b>\n<b>Your Domain. Your Links. No Limits.</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Tired of Bitly restrictions?\n\n@nomadlybot gives you:\n\n✓ <b>Custom Short URLs</b> — your own branded domain\n✓ <b>Bulk Shortening</b> — hundreds of links at once\n✓ <b>Click Analytics</b> — locations, devices, referrers\n✓ <b>DMCA-Free Domains</b> — register offshore for your shortener\n✓ <b>API Access</b> — integrate with your stack\n\n<i>Perfect for marketers, content creators, and businesses\nthat need link management without restrictions.</i>",
+      "cta": "<b>Start at</b> → @nomadlybot\n\nRegister a DMCA-ignored domain and launch your own\ncustom URL shortener in minutes."
     },
     "common": {
-      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+      "footer": "━━━━━━━━━━━━━━━━━━━\n@nomadlybot — <i>DMCA-Free Domains · URL Shortener · Offshore Tools</i>\n━━━━━━━━━━━━━━━━━━━",
+      "opt_out_hint": "<i>Send /stop_promos to unsubscribe · /set_timezone to adjust delivery time</i>"
+    },
+    "opt_out": {
+      "success": "✅ <b>Promotional messages disabled.</b>\n\nYou will no longer receive promotional broadcasts.\nSend /start_promos anytime to re-enable them.",
+      "error": "Something went wrong. Please try again later."
+    },
+    "opt_in": {
+      "success": "✅ <b>Promotional messages enabled.</b>\n\nYou will receive our latest offers and updates.\nSend /stop_promos anytime to opt out.",
+      "error": "Something went wrong. Please try again later."
+    },
+    "timezone": {
+      "usage": "<b>Set Your Timezone</b>\n\nUsage: <code>/set_timezone OFFSET</code>\n\nExamples:\n<code>/set_timezone +3</code>  (Moscow, Istanbul)\n<code>/set_timezone -5</code>  (New York)\n<code>/set_timezone +1</code>  (Paris, Berlin)\n<code>/set_timezone 0</code>   (London, UTC)\n<code>/set_timezone +8</code>  (Singapore, HK)\n\nThis adjusts when you receive promotional messages\nso they arrive at convenient local times.",
+      "success": "✅ <b>Timezone set to {offset}</b>\n\nPromotional messages will be delivered at:\n· 10:00 AM your time\n· 3:00 PM your time\n· 8:00 PM your time",
+      "invalid": "❌ <b>Invalid offset.</b>\n\nPlease enter a number between <b>-12</b> and <b>+14</b>.\nExample: <code>/set_timezone +3</code>",
+      "error": "Something went wrong. Please try again later."
     }
   }
 }

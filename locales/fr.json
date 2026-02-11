@@ -2055,25 +2055,37 @@
   },
   "promo": {
     "offshore_domains": {
-      "title": "<b>DOMAINES OFFSHORE IGNORANT LE DMCA</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Enregistrez des <b>domaines TLD nationaux</b> avec HostBay :\n\n<code>.is   </code> Islande\n<code>.ru   </code> Russie\n<code>.md   </code> Moldavie\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Iles Cocos\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libye\n<code>.ro   </code> Roumanie\n<code>.bg   </code> Bulgarie\n\nAucune restriction de contenu. Controle total sur votre presence numerique.\nPrix a partir de <b>$2.99/an</b> selon le TLD.\n\nUtilisez /start pour chercher et enregistrer votre domaine.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\nBesoin d une <b>protection DMCA plus forte</b> ?\n\n@nomadlybot propose l enregistrement de domaines aupres d un <b>fournisseur offshore dedie sans DMCA</b> — concu specifiquement pour les projets necessitant une resistance maximale aux retraits.",
-      "cta": "TLDs nationaux : Utilisez /start ici meme\nDomaines renforces contre le DMCA : Allez sur @nomadlybot",
-      "footer": "<i>HostBay — Votre Infrastructure Numerique Offshore</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>DOMAINES OFFSHORE</b>\n<b>Enregistrement Ignorant le DMCA</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Enregistrez des <b>domaines TLD nationaux</b> directement avec HostBay :\n\n<code> .is </code>  Islande       <code> .ru </code>  Russie\n<code> .md </code>  Moldavie    <code> .ws </code>  Samoa\n<code> .to </code>  Tonga         <code> .cc </code>  Îles Cocos\n<code> .sx </code>  Sint Maarten  <code> .ly </code>  Libye\n<code> .ro </code>  Roumanie     <code> .bg </code>  Bulgarie\n\n<b>Pourquoi l'offshore ?</b>\n<i>Aucun retrait DMCA. Aucune censure.\nSouveraineté totale sur vos actifs numériques.</i>\n\nÀ partir de <b>$2.99/an</b> — selon le TLD.\n\n<b>Utilisez /start pour chercher et enregistrer instantanément.</b>\n\n━━━━━━━━━━━━━━━━━━━\n\nBesoin de <b>domaines blindés contre le DMCA</b> ?\n\n@nomadlybot propose l'enregistrement via un <b>registraire offshore dédié sans DMCA</b> — conçu pour une résistance maximale aux retraits.",
+      "cta": "<b>TLDs nationaux</b> → Utilisez <code>/start</code> ici même\n<b>Domaines blindés DMCA</b> → @nomadlybot"
     },
     "offshore_hosting": {
-      "title": "<b>HEBERGEMENT cPANEL OFFSHORE</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Hebergez votre site web sur des <b>serveurs offshore qui ignorent le DMCA</b> avec un acces cPanel complet.\n\nCe que vous obtenez :\n\n<b>Plan Debutant</b> - $4.99/mois\nStockage SSD + Bande Passante Illimitee\n\n<b>Plan Professionnel</b> - $9.99/mois\nPlus de Puissance + Support Prioritaire\n\n<b>Plan Entreprise</b> - $19.99/mois\nRessources Maximales + IP Dediee\n\nTous les plans incluent :\nPanneau de Controle cPanel Complet\nInstallation WordPress en Un Clic\nCertificats SSL Gratuits\nInfrastructure Ignorant le DMCA\nGarantie de Disponibilite 99.9%",
-      "cta": "Commencez avec l hebergement offshore aujourd hui.\n\nUtilisez /start pour explorer les plans d hebergement.",
-      "footer": "<i>HostBay - Votre Infrastructure Numerique Offshore</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>HÉBERGEMENT cPANEL OFFSHORE</b>\n<b>Serveurs Ignorant le DMCA</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Hébergez sur une <b>infrastructure offshore</b> avec contrôle cPanel complet :\n\n<b>DÉBUTANT</b> — <code>$4.99/mois</code>\nStockage SSD · Bande Passante Illimitée\n\n<b>PROFESSIONNEL</b> — <code>$9.99/mois</code>\nPlus de Puissance · Support Prioritaire\n\n<b>ENTREPRISE</b> — <code>$19.99/mois</code>\nRessources Max · IP Dédiée\n\n<i>Chaque plan inclut :</i>\n✓ Panneau de Contrôle cPanel Complet\n✓ WordPress en Un Clic\n✓ Certificats SSL Gratuits\n✓ Infrastructure Ignorant le DMCA\n✓ SLA de Disponibilité 99.9%",
+      "cta": "<b>Utilisez /start pour explorer les plans d'hébergement.</b>"
     },
     "url_shortener": {
-      "title": "<b>RACCOURCISSEUR D URLs PERSONNALISE + ENREGISTREMENT DE DOMAINES</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Vous cherchez une <b>alternative a Bitly</b> avec votre propre domaine personnalise ?\n\n@nomadlybot propose :\n\nURLs Courtes Personnalisees - Utilisez votre propre domaine pour des liens de marque\nRaccourcissement en Masse - Raccourcissez des centaines de liens a la fois\nAnalyses de Clics - Suivez les clics, emplacements et appareils\nDomaines Sans DMCA - Enregistrez des domaines offshore pour votre raccourcisseur\nAcces API - Integrez avec vos applications et workflows\n\nParfait pour les marketeurs, createurs de contenu et entreprises qui ont besoin de gestion de liens sans restrictions.",
-      "cta": "Commencez a raccourcir des URLs sur @nomadlybot\n\nEnregistrez un domaine ignorant le DMCA et configurez votre propre raccourcisseur d URLs personnalise en quelques minutes.",
-      "footer": "<i>HostBay - Votre Infrastructure Numerique Offshore</i>"
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>RACCOURCISSEUR D'URLs PERSONNALISÉ</b>\n<b>Votre Domaine. Vos Liens. Sans Limites.</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Assez des restrictions de Bitly ?\n\n@nomadlybot vous offre :\n\n✓ <b>URLs Courtes Personnalisées</b> — votre propre domaine de marque\n✓ <b>Raccourcissement en Masse</b> — des centaines de liens d'un coup\n✓ <b>Analyses de Clics</b> — emplacements, appareils, référents\n✓ <b>Domaines Sans DMCA</b> — enregistrez en offshore pour votre raccourcisseur\n✓ <b>Accès API</b> — intégrez avec votre stack\n\n<i>Parfait pour les marketeurs, créateurs de contenu et entreprises\nqui ont besoin de gestion de liens sans restrictions.</i>",
+      "cta": "<b>Commencez sur</b> → @nomadlybot\n\nEnregistrez un domaine ignorant le DMCA et lancez votre propre\nraccourcisseur d'URLs personnalisé en quelques minutes."
     },
     "common": {
-      "footer": "<i>HostBay - Votre Infrastructure Numerique Offshore</i>"
+      "footer": "━━━━━━━━━━━━━━━━━━━\n@nomadlybot — <i>Domaines Sans DMCA · Raccourcisseur d'URLs · Outils Offshore</i>\n━━━━━━━━━━━━━━━━━━━",
+      "opt_out_hint": "<i>Envoyez /stop_promos pour vous désabonner · /set_timezone pour ajuster l'horaire</i>"
+    },
+    "opt_out": {
+      "success": "✅ <b>Messages promotionnels désactivés.</b>\n\nVous ne recevrez plus de broadcasts promotionnels.\nEnvoyez /start_promos à tout moment pour les réactiver.",
+      "error": "Une erreur est survenue. Veuillez réessayer plus tard."
+    },
+    "opt_in": {
+      "success": "✅ <b>Messages promotionnels activés.</b>\n\nVous recevrez nos dernières offres et mises à jour.\nEnvoyez /stop_promos à tout moment pour les désactiver.",
+      "error": "Une erreur est survenue. Veuillez réessayer plus tard."
+    },
+    "timezone": {
+      "usage": "<b>Définir Votre Fuseau Horaire</b>\n\nUtilisation : <code>/set_timezone OFFSET</code>\n\nExemples :\n<code>/set_timezone +1</code>  (Paris, Bruxelles)\n<code>/set_timezone +2</code>  (Le Caire, Athènes)\n<code>/set_timezone 0</code>   (Londres, UTC)\n<code>/set_timezone -4</code>  (Martinique)\n<code>/set_timezone +3</code>  (Moscou)\n\nCela ajuste quand vous recevez les messages promotionnels\npour qu'ils arrivent à des heures convenables.",
+      "success": "✅ <b>Fuseau horaire défini : {offset}</b>\n\nLes messages promotionnels seront livrés à :\n· 10h00 votre heure\n· 15h00 votre heure\n· 20h00 votre heure",
+      "invalid": "❌ <b>Offset invalide.</b>\n\nEntrez un nombre entre <b>-12</b> et <b>+14</b>.\nExemple : <code>/set_timezone +1</code>",
+      "error": "Une erreur est survenue. Veuillez réessayer plus tard."
     }
   }
 }
