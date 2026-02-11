@@ -9820,7 +9820,8 @@ async def process_wallet_crypto_deposit(query, crypto_type, amount_usd=None):
             currency=crypto_type.lower(),
             order_id=order_id,
             value=gateway_amount,  # Padded amount for crypto calculation
-            user_id=user_record['id']
+            user_id=user_record['id'],
+            base_amount=deposit_amount  # Original user-intended deposit amount
         )
         
         if not payment_result:
