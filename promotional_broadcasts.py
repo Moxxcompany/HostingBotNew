@@ -2,162 +2,109 @@
 """
 Promotional Broadcast Service for HostBay Telegram Bot
 
-Sends 3 daily promotional messages to all bot users, localized to their preferred language.
-Messages focus on:
-  - Offshore DMCA-ignored domains (country-level TLDs)
-  - Offshore cPanel hosting
-  - @nomadlybot for custom URL shortener, Bitly alternative, and domain registration
+Timezone-aware promotional messages sent 3x daily per user's local time.
+Runs hourly via APScheduler, selects users whose local time matches the target hour.
 
-Schedule: 3x daily (morning, afternoon, evening UTC)
+Schedule (in user's local time):
+  - 10:00 AM → Offshore DMCA-ignored domains
+  - 15:00 PM → Offshore cPanel hosting  
+  - 20:00 PM → URL shortener + @nomadlybot
+
+Features:
+  - Respects user's preferred_language (en/es/fr)
+  - Respects timezone_offset for local-time delivery
+  - Respects promo_opted_out flag (/stop_promos)
+  - @nomadlybot cross-promotion footer on every message
 """
 
 import asyncio
 import logging
-import random
-from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, List
 
-from database import execute_query, queue_user_notification_by_user_id
+from database import execute_query, queue_user_notification_by_user_id, get_promo_eligible_users_for_hour
 from localization import t
 
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# PROMOTIONAL MESSAGE SETS
-# Each set contains a unique theme. 3 sets rotate across 3 daily time slots.
-# Messages are keyed by locale path and rendered via the localization system.
-# ============================================================================
-
-# Time slots (UTC): Morning=9:00, Afternoon=15:00, Evening=21:00
-PROMO_SCHEDULE = [
-    {"slot": "morning",   "hour": 9,  "minute": 0},
-    {"slot": "afternoon", "hour": 15, "minute": 0},
-    {"slot": "evening",   "hour": 21, "minute": 0},
-]
-
-# 3 promo themes rotating across the 3 daily slots
-PROMO_THEMES = ["offshore_domains", "offshore_hosting", "url_shortener"]
+# Local-time hours for each promo theme
+PROMO_SLOTS = {
+    10: "offshore_domains",   # 10 AM local
+    15: "offshore_hosting",   # 3 PM local
+    20: "url_shortener",      # 8 PM local
+}
 
 
-def _get_promo_message(theme: str, lang: str) -> str:
-    """Build a fully localized promotional message for the given theme."""
+def build_promo_message(theme: str, lang: str) -> str:
+    """Build a fully localized promo message with @nomadlybot footer."""
     title = t(f'promo.{theme}.title', lang)
     body = t(f'promo.{theme}.body', lang)
     cta = t(f'promo.{theme}.cta', lang)
     footer = t('promo.common.footer', lang)
+    opt_out_hint = t('promo.common.opt_out_hint', lang)
 
-    # Use inline graphics via Unicode box-drawing + emoji for visual appeal
-    message = f"{title}\n\n{body}\n\n{cta}\n\n{footer}"
-    return message
-
-
-async def get_broadcast_recipients() -> List[Dict[str, Any]]:
-    """Get all users who accepted terms with their language preferences."""
-    users = await execute_query(
-        """SELECT id, telegram_id, preferred_language, first_name 
-           FROM users 
-           WHERE terms_accepted = true 
-           AND deleted_at IS NULL
-           ORDER BY id"""
-    )
-    return users or []
+    return f"{title}\n\n{body}\n\n{cta}\n\n{footer}\n{opt_out_hint}"
 
 
-async def send_promotional_broadcast(theme: str) -> Dict[str, int]:
+async def run_hourly_promo_check():
     """
-    Send a promotional message to all bot users, respecting their language preference.
+    Hourly job: Determine which promo themes match the current local hour
+    for each user (based on their timezone_offset) and send accordingly.
     
-    Args:
-        theme: One of 'offshore_domains', 'offshore_hosting', 'url_shortener'
-    
-    Returns:
-        Dict with 'sent', 'failed', 'total' counts
+    This runs once per hour. For each of the 3 promo slots (10, 15, 20),
+    it queries users whose local time IS that hour right now.
     """
-    logger.info(f"📢 PROMO BROADCAST: Starting '{theme}' promotional broadcast")
+    logger.info("📢 PROMO HOURLY CHECK: Starting timezone-aware promo dispatch")
     
-    stats = {"sent": 0, "failed": 0, "total": 0, "skipped": 0}
+    total_stats = {"sent": 0, "failed": 0, "skipped": 0}
     
-    try:
-        users = await get_broadcast_recipients()
-        stats["total"] = len(users)
-        
-        if not users:
-            logger.warning("📢 PROMO BROADCAST: No eligible recipients found")
-            return stats
-        
-        logger.info(f"📢 PROMO BROADCAST: Sending '{theme}' to {len(users)} users")
-        
-        # Process in batches for Telegram rate limiting
-        batch_size = 25
-        
-        for i in range(0, len(users), batch_size):
-            batch = users[i:i + batch_size]
+    for target_hour, theme in PROMO_SLOTS.items():
+        try:
+            users = await get_promo_eligible_users_for_hour(target_hour)
             
-            for user in batch:
-                user_id = user['id']
-                lang = user.get('preferred_language') or 'en'
+            if not users:
+                continue
+            
+            logger.info(f"📢 PROMO: Sending '{theme}' to {len(users)} users (local hour = {target_hour}:00)")
+            
+            batch_size = 25
+            for i in range(0, len(users), batch_size):
+                batch = users[i:i + batch_size]
                 
-                try:
-                    message = _get_promo_message(theme, lang)
+                for user in batch:
+                    user_id = user['id']
+                    lang = user.get('preferred_language') or 'en'
                     
-                    success = await queue_user_notification_by_user_id(
-                        user_id, message, 'HTML'
-                    )
-                    
-                    if success:
-                        stats["sent"] += 1
-                    else:
-                        stats["failed"] += 1
+                    try:
+                        message = build_promo_message(theme, lang)
+                        success = await queue_user_notification_by_user_id(user_id, message, 'HTML')
                         
-                except Exception as user_error:
-                    logger.warning(f"📢 PROMO: Failed to queue promo for user {user_id}: {user_error}")
-                    stats["failed"] += 1
-            
-            # Rate limiting pause between batches
-            if i + batch_size < len(users):
-                await asyncio.sleep(1.0)
-        
-        logger.info(
-            f"📢 PROMO BROADCAST COMPLETE: '{theme}' - "
-            f"Sent: {stats['sent']}, Failed: {stats['failed']}, Total: {stats['total']}"
-        )
-        
-    except Exception as e:
-        logger.error(f"📢 PROMO BROADCAST ERROR: Failed to send '{theme}' broadcast: {e}")
+                        if success:
+                            total_stats["sent"] += 1
+                        else:
+                            total_stats["failed"] += 1
+                    except Exception as e:
+                        logger.warning(f"📢 PROMO: Failed for user {user_id}: {e}")
+                        total_stats["failed"] += 1
+                
+                # Rate limiting between batches
+                if i + batch_size < len(users):
+                    await asyncio.sleep(1.0)
+                    
+        except Exception as e:
+            logger.error(f"📢 PROMO ERROR: Theme '{theme}' failed: {e}")
     
-    return stats
+    if total_stats["sent"] > 0 or total_stats["failed"] > 0:
+        logger.info(
+            f"📢 PROMO HOURLY COMPLETE: Sent={total_stats['sent']}, "
+            f"Failed={total_stats['failed']}"
+        )
 
 
-# ============================================================================
-# SCHEDULED JOB ENTRY POINTS (called by APScheduler)
-# ============================================================================
-
-async def send_morning_promo():
-    """Morning promo: Offshore DMCA-ignored domains"""
-    logger.info("📢 PROMO: Morning broadcast triggered (offshore_domains)")
-    return await send_promotional_broadcast("offshore_domains")
-
-
-async def send_afternoon_promo():
-    """Afternoon promo: Offshore cPanel hosting"""
-    logger.info("📢 PROMO: Afternoon broadcast triggered (offshore_hosting)")
-    return await send_promotional_broadcast("offshore_hosting")
-
-
-async def send_evening_promo():
-    """Evening promo: URL shortener & domain registration via @nomadlybot"""
-    logger.info("📢 PROMO: Evening broadcast triggered (url_shortener)")
-    return await send_promotional_broadcast("url_shortener")
-
-
-# ============================================================================
-# MANUAL TRIGGER (for admin testing)
-# ============================================================================
-
-async def send_all_promos_now() -> Dict[str, Dict[str, int]]:
-    """Send all 3 promotional messages immediately (for testing)."""
-    results = {}
-    for theme in PROMO_THEMES:
-        results[theme] = await send_promotional_broadcast(theme)
-        await asyncio.sleep(2.0)  # Pause between themes
-    return results
+async def send_test_promo(theme: str, user_id: int, lang: str = 'en') -> bool:
+    """Send a single test promo to a specific user (admin testing)."""
+    try:
+        message = build_promo_message(theme, lang)
+        return await queue_user_notification_by_user_id(user_id, message, 'HTML')
+    except Exception as e:
+        logger.error(f"Test promo failed: {e}")
+        return False
