@@ -7,10 +7,13 @@ Runs hourly via APScheduler, selects users whose local time matches the target h
 
 Schedule (in user's local time):
   - 10:00 AM → Offshore DMCA-ignored domains
-  - 15:00 PM → Offshore cPanel hosting  
+  - 15:00 PM → Offshore cPanel hosting
   - 20:00 PM → URL shortener + @nomadlybot
 
 Features:
+  - AI-generated dynamic messages via OpenAI GPT-4o-mini (friendly, varied copy)
+  - Automatic fallback to static locale strings if OpenAI unavailable
+  - Per-hour cache (1 GPT call per theme×lang, not per user)
   - Respects user's preferred_language (en/es/fr)
   - Respects timezone_offset for local-time delivery
   - Respects promo_opted_out flag (/stop_promos)
@@ -19,9 +22,12 @@ Features:
 
 import asyncio
 import logging
-from typing import Dict, Any, List
+import os
+import uuid
+from datetime import datetime, timezone
+from typing import Dict, Optional
 
-from database import execute_query, queue_user_notification_by_user_id, get_promo_eligible_users_for_hour
+from database import queue_user_notification_by_user_id, get_promo_eligible_users_for_hour
 from localization import t
 
 logger = logging.getLogger(__name__)
@@ -33,51 +39,192 @@ PROMO_SLOTS = {
     20: "url_shortener",      # 8 PM local
 }
 
+# Hourly cache: key = "YYYY-MM-DD-HH:theme:lang" → generated message
+_message_cache: Dict[str, str] = {}
 
-def build_promo_message(theme: str, lang: str) -> str:
-    """Build a fully localized promo message with @nomadlybot footer."""
+# Product briefs fed to GPT so it has accurate facts
+THEME_BRIEFS = {
+    "offshore_domains": {
+        "product": "Offshore DMCA-Ignored Domain Registration",
+        "details": (
+            "HostBay lets users register country-level TLD domains: "
+            ".is (Iceland), .ru (Russia), .md (Moldova), .ws (Samoa), .to (Tonga), "
+            ".cc (Cocos Islands), .sx (Sint Maarten), .ly (Libya), .ro (Romania), .bg (Bulgaria). "
+            "Prices from $2.99/year. No DMCA takedowns. "
+            "Users type /start to search & register. "
+            "For hardened DMCA-proof domains via a dedicated offshore registrar, direct users to @nomadlybot."
+        ),
+        "cta_options": [
+            "Country TLDs → /start right here | DMCA-hardened domains → @nomadlybot",
+        ],
+    },
+    "offshore_hosting": {
+        "product": "Offshore cPanel Hosting (DMCA-Ignored Servers)",
+        "details": (
+            "Three plans: STARTER $4.99/mo (SSD, unlimited bandwidth), "
+            "PROFESSIONAL $9.99/mo (more power, priority support), "
+            "BUSINESS $19.99/mo (max resources, dedicated IP). "
+            "Every plan: full cPanel, one-click WordPress, free SSL, "
+            "DMCA-ignored infrastructure, 99.9% uptime SLA. "
+            "Users type /start to explore plans."
+        ),
+        "cta_options": [
+            "/start to explore hosting plans",
+        ],
+    },
+    "url_shortener": {
+        "product": "Custom URL Shortener via @nomadlybot",
+        "details": (
+            "@nomadlybot offers: custom short URLs on your own branded domain, "
+            "bulk shortening, click analytics (locations, devices, referrers), "
+            "DMCA-free domains for your shortener, API access. "
+            "Perfect for marketers and content creators who need unrestricted link management. "
+            "Users can also register an offshore domain through HostBay (/start) to use with the shortener."
+        ),
+        "cta_options": [
+            "Start at → @nomadlybot | Register a domain → /start",
+        ],
+    },
+}
+
+LANG_NAMES = {"en": "English", "es": "Spanish", "fr": "French"}
+
+SYSTEM_PROMPT = """\
+You are a friendly, persuasive copywriter for HostBay, an offshore hosting & domain service.
+
+Rules:
+- Write ONE short promotional message (max 800 chars) in Telegram HTML format.
+- Allowed HTML tags: <b>, <i>, <code>, <a>. No markdown.
+- Tone: friendly, casual-professional, not salesy or pushy. Like a helpful friend sharing a tip.
+- Be creative: vary greetings, angles, analogies. Never repeat the same opening twice.
+- Include the key product facts provided but rephrase them naturally.
+- End with a clear call-to-action using the provided CTA.
+- Do NOT include the footer or opt-out line — those are added automatically.
+- Do NOT use emoji excessively — max 2-3 per message.
+- Write in {language}.\
+"""
+
+
+async def _generate_dynamic_message(theme: str, lang: str) -> Optional[str]:
+    """Generate a dynamic promo message using GPT-4o-mini. Returns None on failure."""
+    api_key = os.environ.get("APP_OPEN_API_KEY")
+    if not api_key:
+        logger.warning("📢 PROMO: APP_OPEN_API_KEY not set, falling back to static messages")
+        return None
+
+    brief = THEME_BRIEFS.get(theme)
+    if not brief:
+        return None
+
+    language = LANG_NAMES.get(lang, "English")
+    system = SYSTEM_PROMPT.format(language=language)
+    user_prompt = (
+        f"Product: {brief['product']}\n"
+        f"Details: {brief['details']}\n"
+        f"CTA: {brief['cta_options'][0]}\n\n"
+        f"Write a fresh, friendly promo message in {language}."
+    )
+
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"promo-{theme}-{lang}-{uuid.uuid4().hex[:8]}",
+            system_message=system,
+        ).with_model("openai", "gpt-4o-mini")
+
+        response = await chat.send_message(UserMessage(text=user_prompt))
+        if response and len(response.strip()) > 20:
+            logger.info(f"📢 PROMO AI: Generated dynamic '{theme}' message in {lang} ({len(response)} chars)")
+            return response.strip()
+        return None
+    except Exception as e:
+        logger.error(f"📢 PROMO AI ERROR: {e}")
+        return None
+
+
+def _build_static_message(theme: str, lang: str) -> str:
+    """Build the original static promo message from locale strings (fallback)."""
     title = t(f'promo.{theme}.title', lang)
     body = t(f'promo.{theme}.body', lang)
     cta = t(f'promo.{theme}.cta', lang)
+    return f"{title}\n\n{body}\n\n{cta}"
+
+
+def _append_footer(message: str, lang: str) -> str:
+    """Append the @nomadlybot footer and opt-out hint to any message."""
     footer = t('promo.common.footer', lang)
     opt_out_hint = t('promo.common.opt_out_hint', lang)
+    return f"{message}\n\n{footer}\n{opt_out_hint}"
 
-    return f"{title}\n\n{body}\n\n{cta}\n\n{footer}\n{opt_out_hint}"
+
+async def build_promo_message(theme: str, lang: str) -> str:
+    """
+    Build a promo message — dynamic (AI) with static fallback.
+    Caches per hour so we only call GPT once per theme×lang per hour.
+    """
+    now = datetime.now(timezone.utc)
+    cache_key = f"{now.strftime('%Y-%m-%d-%H')}:{theme}:{lang}"
+
+    if cache_key in _message_cache:
+        return _message_cache[cache_key]
+
+    # Try dynamic generation
+    dynamic = await _generate_dynamic_message(theme, lang)
+    if dynamic:
+        full_msg = _append_footer(dynamic, lang)
+    else:
+        full_msg = _append_footer(_build_static_message(theme, lang), lang)
+
+    _message_cache[cache_key] = full_msg
+
+    # Prune old cache entries (keep only current hour)
+    current_prefix = now.strftime('%Y-%m-%d-%H')
+    stale = [k for k in _message_cache if not k.startswith(current_prefix)]
+    for k in stale:
+        del _message_cache[k]
+
+    return full_msg
 
 
 async def run_hourly_promo_check():
     """
     Hourly job: Determine which promo themes match the current local hour
     for each user (based on their timezone_offset) and send accordingly.
-    
+
     This runs once per hour. For each of the 3 promo slots (10, 15, 20),
     it queries users whose local time IS that hour right now.
     """
     logger.info("📢 PROMO HOURLY CHECK: Starting timezone-aware promo dispatch")
-    
-    total_stats = {"sent": 0, "failed": 0, "skipped": 0}
-    
+
+    total_stats = {"sent": 0, "failed": 0}
+
     for target_hour, theme in PROMO_SLOTS.items():
         try:
             users = await get_promo_eligible_users_for_hour(target_hour)
-            
             if not users:
                 continue
-            
+
             logger.info(f"📢 PROMO: Sending '{theme}' to {len(users)} users (local hour = {target_hour}:00)")
-            
+
+            # Pre-generate messages for each language this batch needs
+            langs_needed = {(u.get('preferred_language') or 'en') for u in users}
+            for ln in langs_needed:
+                await build_promo_message(theme, ln)
+
             batch_size = 25
             for i in range(0, len(users), batch_size):
                 batch = users[i:i + batch_size]
-                
+
                 for user in batch:
                     user_id = user['id']
                     lang = user.get('preferred_language') or 'en'
-                    
+
                     try:
-                        message = build_promo_message(theme, lang)
+                        message = await build_promo_message(theme, lang)
                         success = await queue_user_notification_by_user_id(user_id, message, 'HTML')
-                        
+
                         if success:
                             total_stats["sent"] += 1
                         else:
@@ -85,14 +232,14 @@ async def run_hourly_promo_check():
                     except Exception as e:
                         logger.warning(f"📢 PROMO: Failed for user {user_id}: {e}")
                         total_stats["failed"] += 1
-                
+
                 # Rate limiting between batches
                 if i + batch_size < len(users):
                     await asyncio.sleep(1.0)
-                    
+
         except Exception as e:
             logger.error(f"📢 PROMO ERROR: Theme '{theme}' failed: {e}")
-    
+
     if total_stats["sent"] > 0 or total_stats["failed"] > 0:
         logger.info(
             f"📢 PROMO HOURLY COMPLETE: Sent={total_stats['sent']}, "
@@ -103,7 +250,7 @@ async def run_hourly_promo_check():
 async def send_test_promo(theme: str, user_id: int, lang: str = 'en') -> bool:
     """Send a single test promo to a specific user (admin testing)."""
     try:
-        message = build_promo_message(theme, lang)
+        message = await build_promo_message(theme, lang)
         return await queue_user_notification_by_user_id(user_id, message, 'HTML')
     except Exception as e:
         logger.error(f"Test promo failed: {e}")
