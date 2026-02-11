@@ -2041,6 +2041,11 @@
       "success": "✅ <b>Fuseau horaire défini : {offset}</b>\n\nLes messages promotionnels seront livrés à :\n· 10h00 votre heure\n· 15h00 votre heure\n· 20h00 votre heure",
       "invalid": "❌ <b>Offset invalide.</b>\n\nEntrez un nombre entre <b>-12</b> et <b>+14</b>.\nExemple : <code>/set_timezone +1</code>",
       "error": "Une erreur est survenue. Veuillez réessayer plus tard."
+    },
+    "rdp_servers": {
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>SERVEURS RDP WINDOWS</b>\n<b>Votre Bureau Cloud Offshore</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Déployez des <b>serveurs Windows RDP</b> sur infrastructure cloud offshore :\n\n- <b>Accès Admin Complet</b> — votre serveur, vos règles\n- <b>Stockage SSD</b> — rapide et fiable\n- <b>Emplacements Mondiaux</b> — USA, Europe, Asie, Amérique du Sud\n- <b>vCPUs Dédiés</b> — pas de ressources partagées\n- <b>Déploiement Instantané</b> — prêt en minutes\n\n<i>Parfait pour le travail à distance, les bots,\nl'automatisation ou l'hébergement d'apps Windows offshore.</i>",
+      "cta": "<b>Utilisez /start pour parcourir les plans de serveurs RDP.</b>"
     }
   }
 }

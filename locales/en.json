@@ -2041,6 +2041,11 @@
       "success": "✅ <b>Timezone set to {offset}</b>\n\nPromotional messages will be delivered at:\n· 10:00 AM your time\n· 3:00 PM your time\n· 8:00 PM your time",
       "invalid": "❌ <b>Invalid offset.</b>\n\nPlease enter a number between <b>-12</b> and <b>+14</b>.\nExample: <code>/set_timezone +3</code>",
       "error": "Something went wrong. Please try again later."
+    },
+    "rdp_servers": {
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>WINDOWS RDP SERVERS</b>\n<b>Your Offshore Cloud Desktop</b>\n━━━━━━━━━━━━━━━━━━━",
+      "body": "Deploy <b>Windows RDP servers</b> on offshore cloud infrastructure:\n\n- <b>Full Admin Access</b> — your server, your rules\n- <b>SSD Storage</b> — fast and reliable\n- <b>Global Locations</b> — US, Europe, Asia, South America\n- <b>Dedicated vCPUs</b> — no shared resources\n- <b>Instant Deploy</b> — ready in minutes\n\n<i>Perfect for remote work, running bots,\nautomation, or hosting Windows apps offshore.</i>",
+      "cta": "<b>Use /start to browse RDP server plans.</b>"
     }
   }
 }
