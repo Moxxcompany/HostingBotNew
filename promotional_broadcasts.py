@@ -175,10 +175,9 @@ def _build_static_message(theme: str, lang: str) -> str:
 
 
 def _append_footer(message: str, lang: str) -> str:
-    """Append the @nomadlybot footer and opt-out hint to any message."""
+    """Append the @nomadlybot footer to any message."""
     footer = t('promo.common.footer', lang)
-    opt_out_hint = t('promo.common.opt_out_hint', lang)
-    return f"{message}\n\n{footer}\n{opt_out_hint}"
+    return f"{message}\n\n{footer}"
 
 
 async def build_promo_message(theme: str, lang: str) -> str:
