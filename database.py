@@ -3594,6 +3594,14 @@ async def init_database():
                 except Exception as migration_error:
                     logger.warning(f"Migration warning (dns_records columns): {migration_error}")
                 
+                # Add base_amount column to payment_intents table
+                # base_amount stores the original user-facing amount BEFORE $2 crypto volatility padding
+                try:
+                    cursor.execute("ALTER TABLE payment_intents ADD COLUMN IF NOT EXISTS base_amount DECIMAL(10,2)")
+                    logger.info("✅ Schema enhancement: Added base_amount column to payment_intents table")
+                except Exception as migration_error:
+                    logger.warning(f"Migration warning (payment_intents base_amount): {migration_error}")
+                
                 # Add soft deletion columns to all business tables
                 business_tables = [
                     'hosting_plans', 'hosting_subscriptions', 'cpanel_accounts', 'domain_hosting_bundles',
