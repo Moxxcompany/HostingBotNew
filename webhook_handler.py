@@ -1714,6 +1714,9 @@ async def _process_domain_payment(order_id: str, payment_details: Dict[str, Any]
             )
             
             if job_id:
+                # Signal event-driven processor to wake immediately
+                from services.job_queue_signals import signal_domain_registration_job
+                signal_domain_registration_job()
                 logger.info(f"✅ Domain registration queued as job #{job_id} for {domain_name} - webhook returning immediately")
             else:
                 logger.error(f"❌ Failed to queue domain registration for {order_id} - falling back to sync")
@@ -2065,6 +2068,9 @@ async def _process_hosting_payment(order_id: str, payment_details: Dict[str, Any
         )
         
         if job_id:
+            # Signal event-driven processor to wake immediately
+            from services.job_queue_signals import signal_hosting_order_job
+            signal_hosting_order_job()
             logger.info(f"✅ Hosting order queued as job #{job_id} for {domain_name} - webhook returning immediately")
         else:
             logger.error(f"❌ Failed to queue hosting order {integer_order_id} - falling back to sync")
