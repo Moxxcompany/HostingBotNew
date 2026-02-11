@@ -6301,7 +6301,7 @@ async def cleanup_stale_and_expired_payments() -> int:
                    WHERE expires_at IS NOT NULL 
                    AND expires_at < CURRENT_TIMESTAMP 
                    AND status NOT IN ('completed', 'expired', 'successful', 'confirmed')
-                   RETURNING id, user_id, order_id, amount, crypto_currency, payment_provider""",
+                   RETURNING id, user_id, order_id, amount, base_amount, crypto_currency, payment_provider""",
             )
             
             expired_count = len(expired_result) if expired_result else 0
