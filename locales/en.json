@@ -945,42 +945,42 @@
     "version_conflict": "Version conflict detected",
     "version_conflict_message": "Another user has modified this DNS record. Please refresh and try again."
   },
-    "dns_wizard": {
-      "record_created_title": "✅ {type} Record Created",
-      "a_record_title": "🅰️ Add A Record ({step}/4): {domain}",
-      "a_record_edit_title": "🅰️ Edit A Record ({step}/4): {domain}",
-      "cname_record_title": "🔗 Add CNAME Record ({step}/3): {domain}",
-      "txt_record_title": "📝 Add TXT Record ({step}/3): {domain}",
-      "mx_record_title": "📧 Add MX Record ({step}/4): {domain}",
-      "enter_mail_server": "Enter the mail server this MX record should point to.\n\nEnter full hostname of your mail server.",
-      "select_priority": "Select priority for this MX record:\n\nLower numbers = higher priority\n• 10 = Primary mail server\n• 20 = Secondary mail server\n• 30 = Backup mail server",
-      "select_ttl": "Select TTL (Time To Live):",
-      "choose_name": "Choose available name:",
-      "custom_subdomain_title": "Custom Subdomain for {domain}",
-      "custom_subdomain_examples": "Examples: www, api, mail",
-      "custom_subdomain_root_tip": "(Use @ for root domain)",
-      "custom_subdomain_rules": "Letters/numbers/hyphens only, 1-63 chars\nCannot start/end with hyphen",
-      "type_your_subdomain": "Type your subdomain:",
-      "enter_ipv4": "Enter the IPv4 address this record should point to.",
-      "enter_cname_target": "Enter the target domain this CNAME should point to.",
-      "enter_txt_content": "Enter the content for your TXT record.",
-      "proxy_setting": "Select Proxy setting:",
-      "proxy_explanation": "🟠 Proxied - Traffic goes through Cloudflare (faster, protected)\n⚪ Direct - Traffic goes directly to your server",
-      "proxy_not_available": "🚫 Proxy mode not available for this IP\n\nPrivate IP addresses cannot use proxy mode because they're not reachable from the internet.\n\nAvailable option:\n⚪ Direct - Traffic goes directly to your server",
-      "confirm_a_record_creation": "Confirm A Record Creation",
-      "confirm_cname_record_creation": "Confirm CNAME Record Creation",
-      "confirm_txt_record_creation": "Confirm TXT Record Creation",
-      "confirm_mx_record_creation": "Confirm MX Record Creation",
-      "this_will_create": "This will create:",
-      "ready_to_create": "Ready to create this DNS record?",
-      "use_common_ip": "Use {ip}",
-      "auto_recommended": "Auto (Recommended)",
-      "proxied_recommended": "🟠 Proxied (Recommended)",
-      "direct_only": "⚪ Direct (Only Option)",
-      "priority_high": "High (10)",
-      "priority_medium": "Medium (20)",
-      "priority_low": "Low (50)"
-    },
+  "dns_wizard": {
+    "record_created_title": "✅ {type} Record Created",
+    "a_record_title": "🅰️ Add A Record ({step}/4): {domain}",
+    "a_record_edit_title": "🅰️ Edit A Record ({step}/4): {domain}",
+    "cname_record_title": "🔗 Add CNAME Record ({step}/3): {domain}",
+    "txt_record_title": "📝 Add TXT Record ({step}/3): {domain}",
+    "mx_record_title": "📧 Add MX Record ({step}/4): {domain}",
+    "enter_mail_server": "Enter the mail server this MX record should point to.\n\nEnter full hostname of your mail server.",
+    "select_priority": "Select priority for this MX record:\n\nLower numbers = higher priority\n• 10 = Primary mail server\n• 20 = Secondary mail server\n• 30 = Backup mail server",
+    "select_ttl": "Select TTL (Time To Live):",
+    "choose_name": "Choose available name:",
+    "custom_subdomain_title": "Custom Subdomain for {domain}",
+    "custom_subdomain_examples": "Examples: www, api, mail",
+    "custom_subdomain_root_tip": "(Use @ for root domain)",
+    "custom_subdomain_rules": "Letters/numbers/hyphens only, 1-63 chars\nCannot start/end with hyphen",
+    "type_your_subdomain": "Type your subdomain:",
+    "enter_ipv4": "Enter the IPv4 address this record should point to.",
+    "enter_cname_target": "Enter the target domain this CNAME should point to.",
+    "enter_txt_content": "Enter the content for your TXT record.",
+    "proxy_setting": "Select Proxy setting:",
+    "proxy_explanation": "🟠 Proxied - Traffic goes through Cloudflare (faster, protected)\n⚪ Direct - Traffic goes directly to your server",
+    "proxy_not_available": "🚫 Proxy mode not available for this IP\n\nPrivate IP addresses cannot use proxy mode because they're not reachable from the internet.\n\nAvailable option:\n⚪ Direct - Traffic goes directly to your server",
+    "confirm_a_record_creation": "Confirm A Record Creation",
+    "confirm_cname_record_creation": "Confirm CNAME Record Creation",
+    "confirm_txt_record_creation": "Confirm TXT Record Creation",
+    "confirm_mx_record_creation": "Confirm MX Record Creation",
+    "this_will_create": "This will create:",
+    "ready_to_create": "Ready to create this DNS record?",
+    "use_common_ip": "Use {ip}",
+    "auto_recommended": "Auto (Recommended)",
+    "proxied_recommended": "🟠 Proxied (Recommended)",
+    "direct_only": "⚪ Direct (Only Option)",
+    "priority_high": "High (10)",
+    "priority_medium": "Medium (20)",
+    "priority_low": "Low (50)"
+  },
   "hosting_management": {
     "title": "🏠 Hosting",
     "account_details": "📊 Account Details",
@@ -1818,7 +1818,7 @@
       "crypto_error": "❌ Error generating payment address. Please try again.",
       "select_currency": "Select Cryptocurrency:",
       "btc_label": "₿ Bitcoin (BTC)",
-      "eth_label": "Ξ Ethereum (ETH)",  
+      "eth_label": "Ξ Ethereum (ETH)",
       "usdt_label": "₮ Tether (USDT)",
       "ltc_label": "Ł Litecoin (LTC)",
       "qr_button": "📱 QR Code",
@@ -2011,6 +2011,29 @@
       "link_local_restriction": "🚫 Link-Local Cannot Use Proxy\n\n{ip_str} is only valid within local network.\n\nUse a public server IP instead.",
       "reserved_ip_restriction": "🚫 Reserved IP Cannot Use Proxy\n\n{ip_str} is a reserved address.\n\nUse a public server IP instead.",
       "invalid_ip_format": "❌ Invalid IP Format\n\n{ip_str} is not a valid IP address.\n\nEnter a valid IPv4 or IPv6 address."
+    }
+  },
+  "promo": {
+    "offshore_domains": {
+      "title": "<b>OFFSHORE DMCA-IGNORED DOMAINS</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Take your project offshore with <b>DMCA-ignored country-level TLD domains</b>.\n\nAvailable TLDs include:\n\n<code>.is   </code> Iceland\n<code>.ru   </code> Russia\n<code>.md   </code> Moldova\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Cocos Islands\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libya\n<code>.ro   </code> Romania\n<code>.bg   </code> Bulgaria\n\n<b>Why offshore domains?</b>\nNo DMCA takedowns. No content restrictions. Full control over your digital presence.\n\nPrices starting from <b>$2.99/year</b> depending on TLD.",
+      "cta": "Register your offshore domain now at @nomadlybot\n\nDMCA-free domain registration from a trusted offshore provider.",
+      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+    },
+    "offshore_hosting": {
+      "title": "<b>OFFSHORE cPANEL HOSTING</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Host your website on <b>DMCA-ignored offshore servers</b> with full cPanel access.\n\nWhat you get:\n\n<b>Starter Plan</b> - $4.99/mo\nSSD Storage + Unlimited Bandwidth\n\n<b>Professional Plan</b> - $9.99/mo\nMore Power + Priority Support\n\n<b>Business Plan</b> - $19.99/mo\nMaximum Resources + Dedicated IP\n\nAll plans include:\nFull cPanel Control Panel\nOne-Click WordPress Install\nFree SSL Certificates\nDMCA-Ignored Infrastructure\n99.9% Uptime Guarantee",
+      "cta": "Get started with offshore hosting today.\n\nUse /start to explore hosting plans.",
+      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+    },
+    "url_shortener": {
+      "title": "<b>CUSTOM URL SHORTENER + DOMAIN REGISTRATION</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Looking for a <b>Bitly alternative</b> with your own custom domain?\n\n@nomadlybot offers:\n\nCustom Short URLs - Use your own domain for branded links\nBulk URL Shortening - Shorten hundreds of links at once\nClick Analytics - Track clicks, locations, and devices\nDMCA-Free Domains - Register offshore domains for your shortener\nAPI Access - Integrate with your apps and workflows\n\nPerfect for marketers, content creators, and businesses that need link management without restrictions.",
+      "cta": "Start shortening URLs at @nomadlybot\n\nRegister a DMCA-ignored domain and set up your own custom URL shortener in minutes.",
+      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+    },
+    "common": {
+      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
     }
   }
 }
