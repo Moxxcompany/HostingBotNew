@@ -1239,6 +1239,42 @@ async def lifespan(app: FastAPI):
         except Exception as hosting_job_error:
             logger.warning(f"⚠️ Failed to schedule hosting order job processor: {hosting_job_error}")
         
+        # Schedule promotional broadcasts (3x daily)
+        # Morning: Offshore DMCA-ignored domains, Afternoon: Offshore hosting, Evening: URL shortener
+        try:
+            from promotional_broadcasts import send_morning_promo, send_afternoon_promo, send_evening_promo
+            
+            scheduler.add_job(
+                send_morning_promo,
+                'cron',
+                hour=9,
+                minute=0,
+                id='promo_morning_offshore_domains',
+                name='Morning Promo: Offshore Domains',
+                replace_existing=True
+            )
+            scheduler.add_job(
+                send_afternoon_promo,
+                'cron',
+                hour=15,
+                minute=0,
+                id='promo_afternoon_offshore_hosting',
+                name='Afternoon Promo: Offshore Hosting',
+                replace_existing=True
+            )
+            scheduler.add_job(
+                send_evening_promo,
+                'cron',
+                hour=21,
+                minute=0,
+                id='promo_evening_url_shortener',
+                name='Evening Promo: URL Shortener',
+                replace_existing=True
+            )
+            logger.info("✅ Scheduled: Promotional broadcasts 3x daily (9AM, 3PM, 9PM UTC)")
+        except Exception as promo_error:
+            logger.warning(f"⚠️ Failed to schedule promotional broadcasts: {promo_error}")
+        
         # Start the scheduler
         scheduler.start()
         logger.info("✅ APScheduler started successfully - all background jobs scheduled")
