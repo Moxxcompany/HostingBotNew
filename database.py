@@ -920,8 +920,9 @@ async def start_health_probe():
         while _health_probe_enabled:
             try:
                 await probe_database_health()
-                # Probe every 30 seconds when healthy, every 10 seconds when unhealthy
-                probe_interval = 30 if _database_healthy else 10
+                # Probe every 120 seconds when healthy, every 30 seconds when unhealthy
+                # OPTIMIZED: Reduced frequency to allow Neon auto-suspend during quiet periods
+                probe_interval = 120 if _database_healthy else 30
                 await asyncio.sleep(probe_interval)
                 
             except asyncio.CancelledError:
@@ -929,7 +930,7 @@ async def start_health_probe():
                 break
             except Exception as probe_error:
                 logger.warning(f"⚠️ NEON HARDENING: Health probe error: {probe_error}")
-                await asyncio.sleep(30)  # Wait longer on probe errors
+                await asyncio.sleep(60)  # Wait longer on probe errors
     
     _health_probe_task = asyncio.create_task(health_probe_loop())
     logger.info("✅ NEON HARDENING: Background health probe started")
@@ -1023,8 +1024,8 @@ def recreate_connection_pool():
             # NEON FREE TIER: Limited to 112 max connections (105 available)
             # Sized for 20-30 concurrent users (each needs ~3-4 queries)
             _connection_pool = psycopg2.pool.ThreadedConnectionPool(
-                minconn=10,       # Pre-warm for concurrent user operations
-                maxconn=30,       # Handle 20-30 users with parallel queries
+                minconn=2,        # OPTIMIZED: Reduced from 10 - saves idle connection overhead
+                maxconn=10,       # OPTIMIZED: Reduced from 30 - sufficient for actual concurrency
                 dsn=database_url,
                 cursor_factory=RealDictCursor,
                 connect_timeout=15,     # PRODUCTION FIX: Allow time for Neon cold start
@@ -1064,8 +1065,8 @@ def get_connection_pool():
             # Sized for 20-30 concurrent users (each needs ~3-4 queries)
             # Note: For higher throughput, upgrade to Neon's pooled connections (-pooler suffix)
             _connection_pool = psycopg2.pool.ThreadedConnectionPool(
-                minconn=10,       # Pre-warm for concurrent user operations
-                maxconn=30,       # Handle 20-30 users with parallel queries
+                minconn=2,        # OPTIMIZED: Reduced from 10 - saves idle connection overhead
+                maxconn=10,       # OPTIMIZED: Reduced from 30 - sufficient for actual concurrency
                 dsn=database_url,
                 cursor_factory=RealDictCursor,
                 connect_timeout=15,     # PRODUCTION FIX: Allow time for Neon cold start
