@@ -1096,28 +1096,6 @@
     "generic": "Configuration DNS :\n1. Allez chez votre registraire\n2. Changez les serveurs de noms vers :\n{nameservers}\n3. Enregistrez et attendez la propagation\n\n💡 Aide ? Contactez le support de votre registraire."
   },
   "admin": {
-    "broadcast_title": "📢 Commande de Diffusion",
-    "broadcast_usage": "Utilisation : /broadcast <message>\n\nExemple : /broadcast Bonjour tout le monde ! Nouvelles fonctionnalités disponibles.\n\nSpécifications :\n• Taille du lot : 30 utilisateurs\n• Délai : 1 seconde entre les lots\n• Tentatives max : 3 essais\n• Envoie uniquement aux utilisateurs qui ont accepté les conditions",
-    "broadcast_disabled": "🚫 Commande Désactivée\n\nCette fonctionnalité est désactivée pour des raisons de sécurité.",
-    "broadcast_access_denied": "🚫 Accès Refusé\n\nTentative d'accès non autorisée enregistrée.",
-    "broadcast_failed": "❌ Échec de la Diffusion\n\nErreur critique survenue. Vérifiez les journaux pour plus de détails.",
-    "broadcast_in_progress": "📢 Diffusion en Cours...",
-    "broadcast_target_users": "👥 Utilisateurs Cibles : {count}",
-    "broadcast_current_batch": "📦 Lot Actuel : {number}",
-    "broadcast_batch_complete": "📊 Lot {number} Terminé",
-    "broadcast_sent": "✅ Envoyé : {sent}/{total}",
-    "broadcast_failed_count": "❌ Échec : {failed}",
-    "broadcast_progress": "📈 Progression Totale : {sent}/{total}",
-    "broadcast_complete": "🎯 Diffusion Terminée !",
-    "broadcast_success_rate": "📊 Taux de Réussite : {rate}%",
-    "broadcast_total_batches": "📦 Total des Lots : {count}",
-    "cancel_access_denied": "🚫 Accès Refusé\n\nSeul l'admin peut utiliser cette commande.",
-    "cancel_success": "🚫 Diffusion Annulée\n\nMode diffusion désactivé.\n\nVous pouvez démarrer une nouvelle diffusion à tout moment depuis le panneau d'administration.",
-    "cancel_no_operation": "ℹ️ Aucune Opération Active\n\nIl n'y a aucune opération active à annuler.",
-    "cancel_error": "❌ Erreur\n\nImpossible de traiter la commande d'annulation.",
-    "text_cancelled": "🚫 Diffusion Annulée\n\nMode diffusion désactivé.",
-    "text_failed": "❌ Échec de la Diffusion\n\nUne erreur s'est produite. Mode diffusion désactivé.",
-    "credit_wallet": "💳 Créditer le Portefeuille Utilisateur",
     "admin_panel": "🔧 Panneau d'Administration Disponible",
     "broadcast": {
       "ready": "📢 <b>Diffusion Admin Prête</b>\n\n✅ <b>Mode diffusion activé!</b>\n\n<b>Prochaines étapes:</b>\n1. Tapez votre message de diffusion comme prochain message\n2. Ou utilisez la commande /broadcast &lt;message&gt;\n3. Envoyez /cancel pour annuler le mode diffusion\n\n<b>Spécifications:</b>\n• Taille de lot: 30 utilisateurs\n• Délai: 1 seconde entre les lots\n• Tentatives max: 3 essais\n• Envoi uniquement aux utilisateurs ayant accepté les conditions\n\n<b>Statut:</b> 🟢 En attente de votre message de diffusion...",
@@ -1993,17 +1971,6 @@
       "preparing": "⏳ Préparation de la commande..."
     },
     "errors": {
-      "empty_subdomain": "Sous-domaine vide",
-      "try_again": "Veuillez réessayer :",
-      "invalid_subdomain_format": "Format de sous-domaine invalide",
-      "subdomain_rules": "Le sous-domaine doit :\n• Commencer et finir par une lettre/chiffre\n• Contenir uniquement des lettres, chiffres, traits d'union\n• Faire 1-63 caractères de long",
-      "cname_conflict_title": "Conflit CNAME",
-      "has_cname_record": "a déjà un enregistrement CNAME.",
-      "mx_cname_conflict": "Les enregistrements MX ne peuvent pas coexister avec des enregistrements CNAME.",
-      "try_different_subdomain": "Essayez un sous-domaine différent :",
-      "wizard_error": "Erreur de l'assistant",
-      "restart_wizard": "Veuillez redémarrer l'assistant DNS.",
-      "input_error": "Erreur de saisie",
       "menu_error": "❌ Erreur lors du chargement du menu RDP. Veuillez réessayer.",
       "purchase_error": "❌ Erreur lors du démarrage de l'achat. Veuillez réessayer.",
       "quick_deploy_error": "❌ Erreur lors du chargement du Déploiement Rapide. Veuillez réessayer.",
@@ -2039,13 +2006,6 @@
       "delete_error": "❌ Erreur lors de la suppression du serveur. Veuillez réessayer.",
       "reinstall_error": "❌ Erreur lors de la réinstallation de Windows. Veuillez réessayer."
     }
-  },
-  "proxy": {
-    "private_ip_restriction": "🚫 IP Privée Ne Peut Pas Utiliser de Proxy\n\n{ip_str} est une adresse privée non accessible depuis Internet.\n\nUtilisez une IP publique ou sélectionnez le mode Direct.",
-    "localhost_restriction": "🚫 Localhost Ne Peut Pas Utiliser de Proxy\n\n{ip_str} n'est accessible que localement.\n\nUtilisez plutôt une IP de serveur publique.",
-    "link_local_restriction": "🚫 Lien-Local Ne Peut Pas Utiliser de Proxy\n\n{ip_str} n'est valide que dans le réseau local.\n\nUtilisez plutôt une IP de serveur publique.",
-    "reserved_ip_restriction": "🚫 IP Réservée Ne Peut Pas Utiliser de Proxy\n\n{ip_str} est une adresse réservée.\n\nUtilisez plutôt une IP de serveur publique.",
-    "invalid_ip_format": "❌ Format d'IP Invalide\n\n{ip_str} n'est pas une adresse IP valide.\n\nEntrez une adresse IPv4 ou IPv6 valide."
   },
   "onboarding": {
     "language_selection": "🌐 Bienvenue sur {platform_name} !\n\nVeuillez sélectionner votre langue préférée :\n\nPlease select your preferred language:\nPor favor selecciona tu idioma:",

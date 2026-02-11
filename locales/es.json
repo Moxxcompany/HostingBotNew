@@ -2007,13 +2007,6 @@
       "reinstall_error": "❌ Error reinstalando Windows. Por favor inténtalo de nuevo."
     }
   },
-  "proxy": {
-    "private_ip_restriction": "🚫 IP Privada No Puede Usar Proxy\n\n{ip_str} es una dirección privada no accesible desde Internet.\n\nUsa una IP pública o selecciona el modo Directo.",
-    "localhost_restriction": "🚫 Localhost No Puede Usar Proxy\n\n{ip_str} solo es accesible localmente.\n\nUsa una IP de servidor público en su lugar.",
-    "link_local_restriction": "🚫 Enlace-Local No Puede Usar Proxy\n\n{ip_str} solo es válido dentro de la red local.\n\nUsa una IP de servidor público en su lugar.",
-    "reserved_ip_restriction": "🚫 IP Reservada No Puede Usar Proxy\n\n{ip_str} es una dirección reservada.\n\nUsa una IP de servidor público en su lugar.",
-    "invalid_ip_format": "❌ Formato de IP Inválido\n\n{ip_str} no es una dirección IP válida.\n\nIngrese una dirección IPv4 o IPv6 válida."
-  },
   "onboarding": {
     "language_selection": "🌐 ¡Bienvenido a {platform_name}!\n\n¡Por favor selecciona tu idioma preferido:\n\nPlease select your preferred language:\nVeuillez sélectionner votre langue:",
     "language_set": "✅ ¡Preferencias de idioma guardadas!",
