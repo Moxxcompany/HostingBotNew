@@ -487,7 +487,8 @@ async def lifespan(app: FastAPI):
         from handlers import (
             start_command, domain_command, dns_command, wallet_command,
             search_command, profile_command, hosting_command, language_command,
-            handle_callback, handle_text_message
+            handle_callback, handle_text_message,
+            stop_promos_command, start_promos_command, set_timezone_command
         )
         from admin_handlers import (
             broadcast_command, cancel_command, maintenance_command,
