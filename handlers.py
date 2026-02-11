@@ -7735,7 +7735,8 @@ async def process_intent_crypto_payment(query, intent_id: str, crypto: str, pric
             currency=crypto.lower(),
             order_id=order_id,
             value=gateway_amount,
-            user_id=user_id
+            user_id=user_id,
+            base_amount=original_amount
         )
         
         if not payment_result:
