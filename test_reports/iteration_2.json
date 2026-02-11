@@ -1,0 +1,132 @@
+{
+  "summary": "Backend-only testing for dynamic promotional broadcasts feature using OpenAI GPT-4o-mini. All 35 tests passed - promotional_broadcasts.py module loading, _sanitize_html markdown conversion, _generate_dynamic_message fallback logic, build_promo_message caching/static fallback, THEME_BRIEFS/PROMO_SLOTS constants, and .env APP_OPEN_API_KEY verification all working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_promotional_broadcasts.py",
+    "/app/test_reports/pytest/pytest_results_promo.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Code is well-structured with proper async/await patterns",
+    "Good separation of concerns: _sanitize_html, _generate_dynamic_message, _build_static_message, _append_footer",
+    "Caching implementation is efficient with hourly pruning of stale entries",
+    "Fallback logic correctly handles missing API key scenario"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_promotional_broadcasts.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "N/A - backend only test"
+  },
+  "test_credentials": null,
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Dynamic promotional broadcasts feature is fully tested. promotional_broadcasts.py at /app/promotional_broadcasts.py contains: build_promo_message (async, caches per hour), _generate_dynamic_message (returns None if no API key), _sanitize_html (converts **bold** to <b>, *italic* to <i>, `code` to <code>, • to -), THEME_BRIEFS (3 themes), PROMO_SLOTS (hours 10/15/20). APP_OPEN_API_KEY is set in /app/.env.",
+  "tests_executed": {
+    "module_loading": {
+      "total": 3,
+      "passed": 3,
+      "details": [
+        "Module imports successfully",
+        "build_promo_message is async",
+        "_generate_dynamic_message is async"
+      ]
+    },
+    "sanitize_html": {
+      "total": 7,
+      "passed": 7,
+      "details": [
+        "**bold** -> <b>bold</b>",
+        "__bold__ -> <b>bold</b>",
+        "*italic* -> <i>italic</i>",
+        "`code` -> <code>code</code>",
+        "• bullet -> - dash",
+        "Combined markdown conversion",
+        "Strips whitespace"
+      ]
+    },
+    "generate_dynamic_message": {
+      "total": 2,
+      "passed": 2,
+      "details": [
+        "Returns None when API key not set (fallback path)",
+        "Returns None for invalid theme"
+      ]
+    },
+    "theme_briefs": {
+      "total": 5,
+      "passed": 5,
+      "details": [
+        "Has all 3 themes: offshore_domains, offshore_hosting, url_shortener",
+        "Each theme has product/details/cta_options",
+        "offshore_domains mentions DMCA, TLDs, @nomadlybot",
+        "offshore_hosting has starter/professional/business tiers",
+        "url_shortener mentions @nomadlybot and analytics"
+      ]
+    },
+    "promo_slots": {
+      "total": 4,
+      "passed": 4,
+      "details": [
+        "Hour 10 -> offshore_domains",
+        "Hour 15 -> offshore_hosting",
+        "Hour 20 -> url_shortener",
+        "Has exactly 3 slots"
+      ]
+    },
+    "build_promo_message": {
+      "total": 5,
+      "passed": 5,
+      "details": [
+        "Fallback to static when no API key",
+        "Message contains @nomadlybot footer for all themes",
+        "Message contains /stop_promos opt-out hint",
+        "Caching returns same message within hour",
+        "Cache key format YYYY-MM-DD-HH:theme:lang"
+      ]
+    },
+    "static_message_fallback": {
+      "total": 2,
+      "passed": 2,
+      "details": [
+        "_build_static_message returns content from locale",
+        "_append_footer adds @nomadlybot and /stop_promos"
+      ]
+    },
+    "env_file": {
+      "total": 3,
+      "passed": 3,
+      "details": [
+        "/app/.env exists",
+        "APP_OPEN_API_KEY in .env file",
+        "APP_OPEN_API_KEY loaded into environment"
+      ]
+    },
+    "lang_names": {
+      "total": 1,
+      "passed": 1,
+      "details": [
+        "en->English, es->Spanish, fr->French"
+      ]
+    },
+    "system_prompt": {
+      "total": 3,
+      "passed": 3,
+      "details": [
+        "SYSTEM_PROMPT exists and is substantial",
+        "Has Telegram HTML tag rules",
+        "Has {language} placeholder"
+      ]
+    }
+  }
+}
