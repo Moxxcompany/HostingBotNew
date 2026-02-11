@@ -113,7 +113,8 @@ class PaymentProviderFactory:
             currency='USD',
             order_type=f'{currency}_payment',
             payment_provider=provider_name,
-            order_id=order_id
+            order_id=order_id,
+            base_amount=base_amount
         )
         
         # Update the intent with crypto currency details (maintain backward compatibility)
