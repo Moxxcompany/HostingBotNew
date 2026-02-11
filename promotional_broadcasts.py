@@ -30,7 +30,23 @@ from typing import Dict, Optional
 from database import queue_user_notification_by_user_id, get_promo_eligible_users_for_hour
 from localization import t
 
+import re
+
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_html(text: str) -> str:
+    """Convert any stray markdown to HTML and clean up for Telegram."""
+    # Bold: **text** or __text__ → <b>text</b>
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'__(.+?)__', r'<b>\1</b>', text)
+    # Italic: *text* or _text_ (single) → <i>text</i>
+    text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<i>\1</i>', text)
+    # Inline code: `text` → <code>text</code>
+    text = re.sub(r'`(.+?)`', r'<code>\1</code>', text)
+    # Bullet points: • → -
+    text = text.replace('•', '-')
+    return text.strip()
 
 # Local-time hours for each promo theme
 PROMO_SLOTS = {
