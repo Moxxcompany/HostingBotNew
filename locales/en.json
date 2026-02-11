@@ -2016,9 +2016,9 @@
   "promo": {
     "offshore_domains": {
       "title": "<b>OFFSHORE DMCA-IGNORED DOMAINS</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Take your project offshore with <b>DMCA-ignored country-level TLD domains</b>.\n\nAvailable TLDs include:\n\n<code>.is   </code> Iceland\n<code>.ru   </code> Russia\n<code>.md   </code> Moldova\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Cocos Islands\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libya\n<code>.ro   </code> Romania\n<code>.bg   </code> Bulgaria\n\n<b>Why offshore domains?</b>\nNo DMCA takedowns. No content restrictions. Full control over your digital presence.\n\nPrices starting from <b>$2.99/year</b> depending on TLD.",
-      "cta": "Register your offshore domain now at @nomadlybot\n\nDMCA-free domain registration from a trusted offshore provider.",
-      "footer": "<i>HostBay - Your Offshore Digital Infrastructure</i>"
+      "body": "Register <b>country-level TLD domains</b> with HostBay:\n\n<code>.is   </code> Iceland\n<code>.ru   </code> Russia\n<code>.md   </code> Moldova\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Cocos Islands\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libya\n<code>.ro   </code> Romania\n<code>.bg   </code> Bulgaria\n\nNo content restrictions. Full control over your digital presence.\nPrices starting from <b>$2.99/year</b> depending on TLD.\n\nUse /start to search and register your domain.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\nNeed <b>stronger DMCA-ignored protection</b>?\n\n@nomadlybot offers domain registration from a dedicated <b>offshore DMCA-free provider</b> — built specifically for projects that require maximum takedown resistance.",
+      "cta": "Country TLDs: Use /start right here\nDMCA-hardened domains: Head to @nomadlybot",
+      "footer": "<i>HostBay — Your Offshore Digital Infrastructure</i>"
     },
     "offshore_hosting": {
       "title": "<b>OFFSHORE cPANEL HOSTING</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",

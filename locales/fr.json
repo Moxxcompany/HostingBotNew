@@ -2055,10 +2055,10 @@
   },
   "promo": {
     "offshore_domains": {
-      "title": "<b>DOMAINES OFFSHORE IGNORER DMCA</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "body": "Passez votre projet en offshore avec des <b>domaines TLD nationaux qui ignorent le DMCA</b>.\n\nTLDs disponibles :\n\n<code>.is   </code> Islande\n<code>.ru   </code> Russie\n<code>.md   </code> Moldavie\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Iles Cocos\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libye\n<code>.ro   </code> Roumanie\n<code>.bg   </code> Bulgarie\n\n<b>Pourquoi des domaines offshore ?</b>\nPas de retraits DMCA. Pas de restrictions de contenu. Controle total sur votre presence numerique.\n\nPrix a partir de <b>$2.99/an</b> selon le TLD.",
-      "cta": "Enregistrez votre domaine offshore maintenant sur @nomadlybot\n\nEnregistrement de domaines sans DMCA aupres d un fournisseur offshore de confiance.",
-      "footer": "<i>HostBay - Votre Infrastructure Numerique Offshore</i>"
+      "title": "<b>DOMAINES OFFSHORE IGNORANT LE DMCA</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Enregistrez des <b>domaines TLD nationaux</b> avec HostBay :\n\n<code>.is   </code> Islande\n<code>.ru   </code> Russie\n<code>.md   </code> Moldavie\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Iles Cocos\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libye\n<code>.ro   </code> Roumanie\n<code>.bg   </code> Bulgarie\n\nAucune restriction de contenu. Controle total sur votre presence numerique.\nPrix a partir de <b>$2.99/an</b> selon le TLD.\n\nUtilisez /start pour chercher et enregistrer votre domaine.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\nBesoin d une <b>protection DMCA plus forte</b> ?\n\n@nomadlybot propose l enregistrement de domaines aupres d un <b>fournisseur offshore dedie sans DMCA</b> — concu specifiquement pour les projets necessitant une resistance maximale aux retraits.",
+      "cta": "TLDs nationaux : Utilisez /start ici meme\nDomaines renforces contre le DMCA : Allez sur @nomadlybot",
+      "footer": "<i>HostBay — Votre Infrastructure Numerique Offshore</i>"
     },
     "offshore_hosting": {
       "title": "<b>HEBERGEMENT cPANEL OFFSHORE</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
