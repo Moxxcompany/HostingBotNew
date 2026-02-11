@@ -55,14 +55,21 @@ def generate_payment_uuid() -> str:
     return generate_uuid()
 
 # UUID-based database operations for production-safe ID management
-async def create_payment_intent_with_uuid(user_id: int, amount: Decimal, currency: str, order_type: str = 'wallet', payment_provider: str = 'test', order_id: str = None) -> str:
-    """Create payment intent with UUID - eliminates sequence synchronization issues"""
+async def create_payment_intent_with_uuid(user_id: int, amount: Decimal, currency: str, order_type: str = 'wallet', payment_provider: str = 'test', order_id: str = None, base_amount: Decimal = None) -> str:
+    """Create payment intent with UUID - eliminates sequence synchronization issues
+    
+    Args:
+        base_amount: Original user-intended amount BEFORE crypto padding. If None, defaults to amount.
+    """
     uuid_id = generate_payment_uuid()
     
+    # base_amount stores the original user-facing amount (before $2 crypto padding)
+    stored_base_amount = str(base_amount) if base_amount is not None else str(amount)
+    
     await execute_update("""
-        INSERT INTO payment_intents (uuid_id, user_id, amount, currency, order_type, payment_provider, order_id, status, created_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP)
-    """, (uuid_id, user_id, str(amount), currency, order_type, payment_provider, order_id))
+        INSERT INTO payment_intents (uuid_id, user_id, amount, base_amount, currency, order_type, payment_provider, order_id, status, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP)
+    """, (uuid_id, user_id, str(amount), stored_base_amount, currency, order_type, payment_provider, order_id))
     
     logger.info(f"✅ Payment intent created with UUID: {uuid_id} for user {user_id} (order_id: {order_id})")
     return uuid_id
