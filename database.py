@@ -406,10 +406,10 @@ def get_db_executor():
     global _db_executor
     if _db_executor is None:
         _db_executor = ThreadPoolExecutor(
-            max_workers=10,  # Optimized: Reduced from 50 to 10 for better resource efficiency
+            max_workers=5,  # OPTIMIZED: Reduced from 10 - matches new maxconn=10 pool
             thread_name_prefix="db_worker"
         )
-        logger.info("✅ Database ThreadPoolExecutor created (10 workers) - optimized for efficiency")
+        logger.info("✅ Database ThreadPoolExecutor created (5 workers) - optimized for Railway")
     return _db_executor
 
 
