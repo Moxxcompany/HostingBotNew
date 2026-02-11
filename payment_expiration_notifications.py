@@ -141,16 +141,23 @@ async def send_payment_timeout_warning(user_id: int, payment_info: Dict[str, Any
         )
         lang = user_result[0]['preferred_language'] if (user_result and user_result[0].get('preferred_language')) else 'en'
         
-        amount = payment_info.get('amount', 0)
+        amount = float(payment_info.get('amount', 0))
         crypto_currency = payment_info.get('crypto_currency', 'cryptocurrency').upper()
         order_id = payment_info.get('order_id', 'unknown')
+        
+        # FIX: Subtract $2 crypto padding for non-stablecoin payments
+        # Show user's original intended amount, not the padded gateway amount
+        CRYPTO_PADDING = 2.0
+        stablecoins = ('USDT', 'USDT_TRC20', 'USDT_ERC20')
+        if crypto_currency and crypto_currency.upper() not in stablecoins and amount > CRYPTO_PADDING:
+            amount = amount - CRYPTO_PADDING
         
         # Build translated message
         title = t('notifications.payment.expiring_soon_title', lang)
         body = t('notifications.payment.expiring_soon_body', lang,
                  crypto_currency=crypto_currency,
                  minutes=minutes_until_expiry,
-                 amount=f"{float(amount):.2f}",
+                 amount=f"{amount:.2f}",
                  order_id=order_id)
         
         message = f"{title}\n\n{body}"
