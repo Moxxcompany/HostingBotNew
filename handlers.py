@@ -19449,7 +19449,8 @@ async def handle_rdp_crypto_currency(query, context, currency: str):
             currency=currency,
             order_id=order_uuid,
             value=gateway_amount,
-            user_id=db_user
+            user_id=db_user,
+            base_amount=original_amount
         )
         
         if not payment_result or not payment_result.get('address'):
