@@ -2943,6 +2943,25 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Get current language preference after potential selection
         current_lang = await get_user_language_preference(user.id)
         
+        # AUTO-DETECT TIMEZONE: Set timezone from Telegram language_code if not already set
+        try:
+            from database import execute_query as _tz_query, set_user_timezone_offset
+            from utils.timezone_utils import detect_timezone_from_language_code
+            tz_result = await _tz_query(
+                "SELECT timezone_offset FROM users WHERE telegram_id = %s AND deleted_at IS NULL",
+                (user.id,)
+            )
+            current_offset = tz_result[0]['timezone_offset'] if tz_result else None
+            # Only auto-detect if timezone was never explicitly set (still default 0 or NULL)
+            if current_offset is None or current_offset == 0:
+                tg_lang_code = getattr(user, 'language_code', None)
+                detected_offset = detect_timezone_from_language_code(tg_lang_code)
+                if detected_offset != 0:
+                    await set_user_timezone_offset(user.id, detected_offset)
+                    logger.info(f"🌍 AUTO-TIMEZONE: Set UTC{'+' if detected_offset >= 0 else ''}{detected_offset} for user {user.id} (lang_code={tg_lang_code})")
+        except Exception as tz_err:
+            logger.warning(f"⚠️ Auto-timezone detection failed for user {user.id}: {tz_err}")
+        
         terms_accepted = user_data['terms_accepted_bool']
         logger.info(f"🔍 TERMS CHECK: User {user.id} ({user.username}) terms_accepted = {terms_accepted}")
         
