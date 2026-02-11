@@ -580,8 +580,8 @@ async def lifespan(app: FastAPI):
         
         # Initialize and start bot with extended timeout and retry logic
         # Telegram API can be slow during deployment, especially under load
-        BOT_INIT_TIMEOUT = 60  # PRODUCTION FIX: 60 seconds for cold start scenarios
-        MAX_INIT_RETRIES = 5   # PRODUCTION FIX: More retries for reliability
+        BOT_INIT_TIMEOUT = 30  # OPTIMIZED: 30 seconds - prevents Railway restart loops on cold starts
+        MAX_INIT_RETRIES = 3   # OPTIMIZED: 3 retries max (was 5) - faster failure detection
         
         for attempt in range(1, MAX_INIT_RETRIES + 1):
             try:
@@ -1049,12 +1049,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_rdp_status_polling,
                 'interval',
-                minutes=3,
+                minutes=10,
                 id='rdp_status_polling',
                 name='RDP Server Status Polling',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: RDP server status polling every 3 minutes")
+            logger.info("✅ Scheduled: RDP server status polling every 10 minutes")
         except Exception as rdp_polling_error:
             logger.warning(f"⚠️ Failed to schedule RDP status polling: {rdp_polling_error}")
         
@@ -1066,12 +1066,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 fastforex_service.prewarm_rates,
                 'interval',
-                minutes=3,
+                minutes=15,
                 id='exchange_rate_prewarm',
                 name='Exchange Rate Pre-warming',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Exchange rate pre-warming every 3 minutes (6 currencies)")
+            logger.info("✅ Scheduled: Exchange rate pre-warming every 15 minutes (6 currencies)")
         except Exception as prewarm_error:
             logger.warning(f"⚠️ Failed to schedule exchange rate pre-warming: {prewarm_error}")
         
@@ -1219,12 +1219,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_domain_registration_job_processor,
                 'interval',
-                seconds=5,
+                seconds=30,
                 id='domain_registration_job_processor',
                 name='Domain Registration Job Processor',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Domain registration job processor every 5 seconds")
+            logger.info("✅ Scheduled: Domain registration job processor every 30 seconds")
         except Exception as domain_job_error:
             logger.warning(f"⚠️ Failed to schedule domain registration job processor: {domain_job_error}")
         
@@ -1236,12 +1236,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_hosting_order_job_processor,
                 'interval',
-                seconds=5,
+                seconds=30,
                 id='hosting_order_job_processor',
                 name='Hosting Order Job Processor',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Hosting order job processor every 5 seconds")
+            logger.info("✅ Scheduled: Hosting order job processor every 30 seconds")
         except Exception as hosting_job_error:
             logger.warning(f"⚠️ Failed to schedule hosting order job processor: {hosting_job_error}")
         
