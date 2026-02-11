@@ -146,6 +146,9 @@ async def send_payment_timeout_warning(user_id: int, payment_info: Dict[str, Any
         )
         lang = user_result[0]['preferred_language'] if (user_result and user_result[0].get('preferred_language')) else 'en'
         
+        crypto_currency = payment_info.get('crypto_currency', 'cryptocurrency').upper()
+        order_id = payment_info.get('order_id', 'unknown')
+        
         # Use base_amount (original user-intended amount) if available,
         # otherwise fall back to subtracting $2 crypto padding
         if payment_info.get('base_amount') is not None:
