@@ -1227,39 +1227,11 @@ async def lifespan(app: FastAPI):
         except Exception as addon_job_error:
             logger.warning(f"⚠️ Failed to schedule addon domain job processor: {addon_job_error}")
         
-        # Schedule domain registration job processor (every 5 seconds)
-        # Processes domain registrations async to prevent webhook timeouts
-        try:
-            from services.domain_registration_job_service import run_domain_registration_job_processor
-            
-            scheduler.add_job(
-                run_domain_registration_job_processor,
-                'interval',
-                seconds=30,
-                id='domain_registration_job_processor',
-                name='Domain Registration Job Processor',
-                replace_existing=True
-            )
-            logger.info("✅ Scheduled: Domain registration job processor every 30 seconds")
-        except Exception as domain_job_error:
-            logger.warning(f"⚠️ Failed to schedule domain registration job processor: {domain_job_error}")
-        
-        # Schedule hosting order job processor (every 5 seconds)
-        # Processes hosting orders async to prevent webhook timeouts
-        try:
-            from services.domain_registration_job_service import run_hosting_order_job_processor
-            
-            scheduler.add_job(
-                run_hosting_order_job_processor,
-                'interval',
-                seconds=30,
-                id='hosting_order_job_processor',
-                name='Hosting Order Job Processor',
-                replace_existing=True
-            )
-            logger.info("✅ Scheduled: Hosting order job processor every 30 seconds")
-        except Exception as hosting_job_error:
-            logger.warning(f"⚠️ Failed to schedule hosting order job processor: {hosting_job_error}")
+        # EVENT-DRIVEN: Domain registration and hosting order processors
+        # Replaced APScheduler polling (every 30s) with event-driven background tasks.
+        # Processors now sleep until signaled by webhook_handler, with a 5-minute fallback.
+        # This eliminates ~2,880 idle DB polls/day.
+        # (Background tasks are started below, outside the scheduler block)
         
         # Schedule promotional broadcasts (hourly check for timezone-aware delivery)
         # Runs every hour, sends promos to users whose local time matches 10AM/3PM/8PM
