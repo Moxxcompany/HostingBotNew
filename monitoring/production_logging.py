@@ -156,42 +156,12 @@ class ProductionLogger:
         self._background_tasks_started = False
     
     def _setup_structured_logging(self):
-        """Setup structured logging for production"""
-        from decimal import Decimal
-        from enum import Enum
-        
-        # Create custom JSON encoder that handles Decimal objects
-        class DecimalEncoder(json.JSONEncoder):
-            def default(self, obj):
-                if isinstance(obj, Decimal):
-                    return float(obj)
-                if isinstance(obj, Enum):
-                    return obj.value
-                return super().default(obj)
-        
-        # Create custom formatter for structured logs
-        class StructuredFormatter(logging.Formatter):
-            def format(self, record):
-                log_data = {
-                    'timestamp': datetime.fromtimestamp(record.created, timezone.utc).isoformat(),
-                    'level': record.levelname,
-                    'component': getattr(record, 'component', record.name),
-                    'message': record.getMessage(),
-                    'trace_id': getattr(record, 'trace_id', None),
-                    'user_id': getattr(record, 'user_id', None),
-                    'order_id': getattr(record, 'order_id', None),
-                    'context': getattr(record, 'context', {})
-                }
-                return json.dumps(log_data, cls=DecimalEncoder)
-        
-        # Setup handler
-        handler = logging.StreamHandler()
-        handler.setFormatter(StructuredFormatter())
-        
-        # Get root logger and add handler
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        """Setup structured logging for production - OPTIMIZED: no-op to prevent duplicate handlers.
+        JSON logging is now configured once in fastapi_server.py startup."""
+        # OPTIMIZED: Removed duplicate handler addition. The root logger's JSON formatter
+        # is set up in fastapi_server.py. Adding another handler here was causing every
+        # log line to be emitted twice (doubling Railway log volume).
+        pass
     
     def _start_background_tasks(self):
         """Start background tasks for metrics processing"""
