@@ -9368,7 +9368,8 @@ async def process_crypto_payment(query, crypto_type, domain_name, price, currenc
             currency=crypto_type.lower(),
             order_id=order_id,
             value=gateway_price,
-            user_id=user_record['id']
+            user_id=user_record['id'],
+            base_amount=original_price
         )
         
         if not payment_result:
