@@ -246,6 +246,69 @@ class UTCContext:
         if exc_type:
             logger.error(f"❌ UTC operation failed: {exc_val}")
 
+# Telegram language_code -> approximate UTC offset mapping
+# Based on most common timezone for each language's primary country
+LANGUAGE_CODE_TO_TIMEZONE = {
+    # Western Europe (UTC+1)
+    'fr': 1, 'de': 1, 'it': 1, 'es': 1, 'nl': 1, 'da': 1, 'nb': 1, 'sv': 1, 'pl': 1,
+    'cs': 1, 'sk': 1, 'hu': 1, 'hr': 1, 'sl': 1, 'bs': 1, 'sr': 1, 'mk': 1, 'sq': 1,
+    'mt': 1, 'lb': 1,
+    # Eastern Europe (UTC+2)
+    'el': 2, 'bg': 2, 'ro': 2, 'uk': 2, 'fi': 2, 'et': 2, 'lv': 2, 'lt': 2,
+    # Russia / Moscow (UTC+3)
+    'ru': 3,
+    # Turkey (UTC+3)
+    'tr': 3,
+    # Arabic - broad spread, default to Gulf (UTC+3)
+    'ar': 3,
+    # Iran (UTC+3:30 -> round to 4)
+    'fa': 4,
+    # India (UTC+5:30 -> round to 5)
+    'hi': 5, 'bn': 5, 'ta': 5, 'te': 5, 'mr': 5, 'gu': 5, 'kn': 5, 'ml': 5, 'pa': 5,
+    'ur': 5, 'ne': 5, 'si': 5,
+    # Central Asia (UTC+6)
+    'kk': 6, 'uz': 5,
+    # Southeast Asia (UTC+7)
+    'th': 7, 'vi': 7, 'id': 7, 'ms': 8,
+    # East Asia (UTC+8)
+    'zh': 8, 'zh-hans': 8, 'zh-hant': 8,
+    # Japan / Korea (UTC+9)
+    'ja': 9, 'ko': 9,
+    # Australia (UTC+10)
+    'en-au': 10,
+    # New Zealand (UTC+12)
+    'en-nz': 12,
+    # Americas
+    'pt': -3, 'pt-br': -3,  # Brazil
+    # English defaults to UTC (0) since it's too broad
+    'en': 0,
+    # North America - too broad for 'en', but specific codes:
+    'en-us': -5, 'en-ca': -5, 'en-gb': 0,
+}
+
+
+def detect_timezone_from_language_code(language_code: str) -> int:
+    """
+    Detect approximate timezone UTC offset from Telegram language_code.
+    Returns the offset in hours, or 0 (UTC) if unknown.
+    """
+    if not language_code:
+        return 0
+    
+    lc = language_code.lower().strip()
+    
+    # Try exact match first (e.g., 'pt-br', 'zh-hans')
+    if lc in LANGUAGE_CODE_TO_TIMEZONE:
+        return LANGUAGE_CODE_TO_TIMEZONE[lc]
+    
+    # Try base language (e.g., 'pt' from 'pt-br')
+    base = lc.split('-')[0]
+    if base in LANGUAGE_CODE_TO_TIMEZONE:
+        return LANGUAGE_CODE_TO_TIMEZONE[base]
+    
+    return 0
+
+
 # Initialize timezone consistency on module import
 try:
     tz_manager = get_timezone_manager()
