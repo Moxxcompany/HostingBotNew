@@ -57,7 +57,8 @@
     "databases_short": "BDs",
     "domains": "Domaines",
     "hosting": "Hébergement",
-    "error": "Erreur :"
+    "error": "Erreur :",
+    "priority": "Priorite"
   },
   "domain": {
     "already_registered": "Déjà enregistré",
@@ -432,6 +433,13 @@
       "rdp_success": "✅ <b>Serveur RDP Renouvelé avec Succès</b>\n\nServeur: <code>{hostname}</code> ({plan_name})\nMontant prélevé: ${amount}\n\nVotre serveur continuera de fonctionner normalement.\nProchain renouvellement dans {billing_cycle}.",
       "rdp_grace": "⚠️ <b>Échec du Renouvellement du Serveur RDP</b>\n\nServeur: <code>{hostname}</code> ({plan_name})\nRequis: ${amount}\n\n❌ Solde de portefeuille insuffisant.\n\n⏳ <b>Période de Grâce:</b> {hours} heures restantes\nVotre serveur sera suspendu si le paiement n'est pas reçu.\n\n💳 Ajoutez des fonds immédiatement: /dashboard → 💰 Portefeuille",
       "rdp_suspended": "🔴 <b>Serveur RDP Suspendu</b>\n\nServeur: <code>{hostname}</code> ({plan_name})\n\nVotre serveur a été suspendu en raison d'un non-paiement.\nL'instance du serveur a été arrêtée pour éviter des frais supplémentaires.\n\n<b>Pour réactiver:</b>\n1. Ajoutez ${amount} à votre portefeuille\n2. Contactez le support pour réactiver\n\n💳 Ajouter des fonds: /dashboard → 💰 Portefeuille"
+    },
+    "proxy": {
+      "invalid_ip_format": "Format IP invalide\n\n{ip_str} n est pas une adresse IP valide.\n\nEntrez une adresse IPv4 ou IPv6 valide.",
+      "link_local_restriction": "IP de lien local. Impossible d utiliser le proxy\n\n{ip_str} est une adresse de lien local.\n\nUtilisez une IP de serveur publique.",
+      "localhost_restriction": "IP localhost. Impossible d utiliser le proxy\n\n{ip_str} est une adresse localhost.\n\nUtilisez une IP de serveur publique.",
+      "private_ip_restriction": "IP privee. Impossible d utiliser le proxy\n\n{ip_str} est une adresse privee.\n\nUtilisez une IP de serveur publique.",
+      "reserved_ip_restriction": "IP reservee. Impossible d utiliser le proxy\n\n{ip_str} est une adresse reservee.\n\nUtilisez une IP de serveur publique."
     }
   },
   "success": {
@@ -887,7 +895,11 @@
       "step3_title": "3. Configuration de l'Intégration",
       "supported": "✅ DNS standard • Cloudflare • NS personnalisés",
       "supported_title": "Configurations Prises en Charge:"
-    }
+    },
+    "analysis_complete": "Analyse terminee",
+    "analysis_failed": "Echec de l analyse",
+    "analyzing": "Analyse en cours...",
+    "input_prompt": "Veuillez entrer le domaine que vous souhaitez lier"
   },
   "language": {
     "title": "🌍 Langue",

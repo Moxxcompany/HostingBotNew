@@ -57,7 +57,8 @@
     "databases_short": "DBs",
     "domains": "Dominios",
     "hosting": "Hosting",
-    "error": "Error:"
+    "error": "Error:",
+    "priority": "Prioridad"
   },
   "domain": {
     "already_registered": "Ya registrado",
@@ -432,6 +433,13 @@
       "rdp_success": "✅ <b>Servidor RDP Renovado Exitosamente</b>\n\nServidor: <code>{hostname}</code> ({plan_name})\nMonto cobrado: ${amount}\n\nTu servidor continuará funcionando normalmente.\nPróxima renovación en {billing_cycle}.",
       "rdp_grace": "⚠️ <b>Renovación de Servidor RDP Fallida</b>\n\nServidor: <code>{hostname}</code> ({plan_name})\nRequerido: ${amount}\n\n❌ Saldo de billetera insuficiente.\n\n⏳ <b>Período de Gracia:</b> {hours} horas restantes\nTu servidor será suspendido si no se recibe el pago.\n\n💳 Añade fondos inmediatamente: /dashboard → 💰 Billetera",
       "rdp_suspended": "🔴 <b>Servidor RDP Suspendido</b>\n\nServidor: <code>{hostname}</code> ({plan_name})\n\nTu servidor ha sido suspendido debido a falta de pago.\nLa instancia del servidor ha sido detenida para prevenir cargos adicionales.\n\n<b>Para reactivar:</b>\n1. Añade ${amount} a tu billetera\n2. Contacta soporte para reactivar\n\n💳 Añadir fondos: /dashboard → 💰 Billetera"
+    },
+    "proxy": {
+      "invalid_ip_format": "Formato de IP invalido\n\n{ip_str} no es una direccion IP valida.\n\nIngresa una direccion IPv4 o IPv6 valida.",
+      "link_local_restriction": "IP de enlace local. No se puede usar proxy\n\n{ip_str} es una direccion de enlace local.\n\nUsa una IP de servidor publico.",
+      "localhost_restriction": "IP de localhost. No se puede usar proxy\n\n{ip_str} es una direccion localhost.\n\nUsa una IP de servidor publico.",
+      "private_ip_restriction": "IP privada. No se puede usar proxy\n\n{ip_str} es una direccion privada.\n\nUsa una IP de servidor publico.",
+      "reserved_ip_restriction": "IP reservada. No se puede usar proxy\n\n{ip_str} es una direccion reservada.\n\nUsa una IP de servidor publico."
     }
   },
   "success": {
@@ -887,7 +895,11 @@
       "step3_title": "3. Configuración de Integración",
       "supported": "✅ DNS estándar • Cloudflare • NS personalizados",
       "supported_title": "Configuraciones Soportadas:"
-    }
+    },
+    "analysis_complete": "Analisis completado",
+    "analysis_failed": "Error en el analisis",
+    "analyzing": "Analizando...",
+    "input_prompt": "Por favor ingresa el dominio que deseas vincular"
   },
   "language": {
     "title": "🌍 Idioma",
