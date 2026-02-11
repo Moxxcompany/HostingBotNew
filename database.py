@@ -3562,7 +3562,9 @@ async def init_database():
                     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS language_selected_manually BOOLEAN DEFAULT FALSE")
                     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ")
                     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_by INTEGER REFERENCES users(id)")
-                    logger.info("✅ Schema enhancement: Added missing columns to users table (preferred_language, language_selected_manually, deleted_at, deleted_by)")
+                    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_opted_out BOOLEAN DEFAULT FALSE")
+                    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone_offset INTEGER DEFAULT 0")
+                    logger.info("✅ Schema enhancement: Added missing columns to users table (preferred_language, language_selected_manually, deleted_at, deleted_by, promo_opted_out, timezone_offset)")
                 except Exception as migration_error:
                     logger.warning(f"Migration warning (users columns): {migration_error}")
                 
