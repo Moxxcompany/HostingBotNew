@@ -27,7 +27,7 @@ class DynoPayService:
     def __init__(self) -> None:
         self.api_key = os.getenv('DYNOPAY_API_KEY')
         self.wallet_token = os.getenv('DYNOPAY_WALLET_TOKEN')
-        self.base_url = os.getenv('DYNOPAY_BASE_URL', 'https://codebase-setup-4.preview.emergentagent.com/api')
+        self.base_url = os.getenv('DYNOPAY_BASE_URL', 'https://bootstrap-env.preview.emergentagent.com/api')
         
         if self.api_key and self.wallet_token:
             logger.info("🔧 DynoPay service initialized with API key and wallet token")
