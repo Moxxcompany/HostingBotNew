@@ -1075,7 +1075,7 @@ async def lifespan(app: FastAPI):
         except Exception as prewarm_error:
             logger.warning(f"⚠️ Failed to schedule exchange rate pre-warming: {prewarm_error}")
         
-        # Schedule DNS reconciliation (every 6 hours)
+        # Schedule DNS reconciliation (daily at 1 AM - reduced from every 6 hours)
         # Keeps database in sync with Cloudflare by detecting externally deleted records
         try:
             from services.dns_reconciliation import run_dns_reconciliation
@@ -1083,16 +1083,16 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_dns_reconciliation,
                 'cron',
-                hour='*/6',
+                hour=1,
                 id='dns_reconciliation',
                 name='DNS Reconciliation',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: DNS reconciliation every 6 hours")
+            logger.info("✅ Scheduled: DNS reconciliation daily at 1 AM")
         except Exception as dns_recon_error:
             logger.warning(f"⚠️ Failed to schedule DNS reconciliation: {dns_recon_error}")
         
-        # Schedule Cloudflare zone reconciliation (every 12 hours)
+        # Schedule Cloudflare zone reconciliation (daily at 1:30 AM - reduced from every 12 hours)
         # Detects zones deleted externally and cleans up orphaned zone IDs
         try:
             from services.zone_reconciliation import run_zone_reconciliation
@@ -1100,12 +1100,13 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_zone_reconciliation,
                 'cron',
-                hour='*/12',
+                hour=1,
+                minute=30,
                 id='zone_reconciliation',
                 name='Zone Reconciliation',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Zone reconciliation every 12 hours")
+            logger.info("✅ Scheduled: Zone reconciliation daily at 1:30 AM")
         except Exception as zone_recon_error:
             logger.warning(f"⚠️ Failed to schedule zone reconciliation: {zone_recon_error}")
         
@@ -1126,7 +1127,7 @@ async def lifespan(app: FastAPI):
         except Exception as domain_recon_error:
             logger.warning(f"⚠️ Failed to schedule domain reconciliation: {domain_recon_error}")
         
-        # Schedule cPanel account reconciliation (every 4 hours)
+        # Schedule cPanel account reconciliation (every 12 hours - reduced from every 4 hours)
         # Syncs hosting account status with WHM server
         try:
             from services.cpanel_reconciliation import run_cpanel_reconciliation
@@ -1134,16 +1135,16 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_cpanel_reconciliation,
                 'cron',
-                hour='*/4',
+                hour='*/12',
                 id='cpanel_reconciliation',
                 name='cPanel Reconciliation',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: cPanel reconciliation every 4 hours")
+            logger.info("✅ Scheduled: cPanel reconciliation every 12 hours")
         except Exception as cpanel_recon_error:
             logger.warning(f"⚠️ Failed to schedule cPanel reconciliation: {cpanel_recon_error}")
         
-        # Schedule RDP server reconciliation (every 2 hours)
+        # Schedule RDP server reconciliation (every 6 hours - reduced from every 2 hours)
         # Syncs server status with Vultr API
         try:
             from services.rdp_reconciliation import run_rdp_reconciliation
@@ -1151,16 +1152,16 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_rdp_reconciliation,
                 'cron',
-                hour='*/2',
+                hour='*/6',
                 id='rdp_reconciliation',
                 name='RDP Reconciliation',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: RDP reconciliation every 2 hours")
+            logger.info("✅ Scheduled: RDP reconciliation every 6 hours")
         except Exception as rdp_recon_error:
             logger.warning(f"⚠️ Failed to schedule RDP reconciliation: {rdp_recon_error}")
         
-        # Schedule payment reconciliation (every hour)
+        # Schedule payment reconciliation (every 4 hours - reduced from every hour)
         # Recovers payments that may have been confirmed but webhook failed
         try:
             from services.payment_reconciliation import run_payment_reconciliation
@@ -1168,12 +1169,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_payment_reconciliation,
                 'interval',
-                hours=1,
+                hours=4,
                 id='payment_reconciliation',
                 name='Payment Reconciliation',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Payment reconciliation every hour")
+            logger.info("✅ Scheduled: Payment reconciliation every 4 hours")
         except Exception as payment_recon_error:
             logger.warning(f"⚠️ Failed to schedule payment reconciliation: {payment_recon_error}")
         
@@ -1194,7 +1195,7 @@ async def lifespan(app: FastAPI):
         except Exception as cred_recon_error:
             logger.warning(f"⚠️ Failed to schedule credential validation: {cred_recon_error}")
         
-        # Schedule addon domain job processor (every 10 minutes)
+        # Schedule addon domain job processor (every 30 minutes - reduced from every 10 minutes)
         # Automatically retries adding external addon domains to cPanel after DNS propagation
         try:
             from services.addon_domain_job_service import run_addon_domain_job_processor
@@ -1202,12 +1203,12 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(
                 run_addon_domain_job_processor,
                 'interval',
-                minutes=10,
+                minutes=30,
                 id='addon_domain_job_processor',
                 name='Addon Domain Job Processor',
                 replace_existing=True
             )
-            logger.info("✅ Scheduled: Addon domain job processor every 10 minutes")
+            logger.info("✅ Scheduled: Addon domain job processor every 30 minutes")
         except Exception as addon_job_error:
             logger.warning(f"⚠️ Failed to schedule addon domain job processor: {addon_job_error}")
         
