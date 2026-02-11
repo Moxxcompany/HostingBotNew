@@ -9211,3 +9211,70 @@ async def seed_openprovider_accounts() -> bool:
     except Exception as e:
         logger.error(f"❌ Failed to seed OpenProvider accounts: {e}")
         return False
+
+
+# =============================================================================
+# PROMOTIONAL BROADCAST: Opt-out and Timezone helpers
+# =============================================================================
+
+async def set_user_promo_opt_out(user_id: int, opted_out: bool) -> bool:
+    """Set user's promotional broadcast opt-out preference."""
+    try:
+        await execute_update(
+            "UPDATE users SET promo_opted_out = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+            (opted_out, user_id)
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update promo opt-out for user {user_id}: {e}")
+        return False
+
+
+async def set_user_promo_opt_out_by_telegram_id(telegram_id: int, opted_out: bool) -> bool:
+    """Set user's promotional broadcast opt-out by telegram_id."""
+    try:
+        await execute_update(
+            "UPDATE users SET promo_opted_out = %s, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = %s",
+            (opted_out, telegram_id)
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update promo opt-out for telegram user {telegram_id}: {e}")
+        return False
+
+
+async def set_user_timezone_offset(telegram_id: int, offset_hours: int) -> bool:
+    """Set user's timezone UTC offset (e.g., +3, -5, 0)."""
+    try:
+        await execute_update(
+            "UPDATE users SET timezone_offset = %s, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = %s",
+            (offset_hours, telegram_id)
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update timezone for telegram user {telegram_id}: {e}")
+        return False
+
+
+async def get_promo_eligible_users_for_hour(target_local_hour: int) -> list:
+    """
+    Get users eligible for promo at the given local hour.
+    Finds users whose current local time matches target_local_hour based on their timezone_offset.
+    Only includes users who have NOT opted out and have accepted terms.
+    """
+    try:
+        results = await execute_query(
+            """SELECT id, telegram_id, preferred_language, first_name, timezone_offset
+               FROM users 
+               WHERE terms_accepted = true 
+               AND (promo_opted_out IS NULL OR promo_opted_out = false)
+               AND deleted_at IS NULL
+               AND (EXTRACT(HOUR FROM (NOW() AT TIME ZONE 'UTC' + (COALESCE(timezone_offset, 0) || ' hours')::INTERVAL))) = %s
+            """,
+            (target_local_hour,)
+        )
+        return results or []
+    except Exception as e:
+        logger.error(f"Failed to get promo-eligible users for local hour {target_local_hour}: {e}")
+        return []
+
