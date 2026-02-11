@@ -850,48 +850,44 @@
     "error": "❌ Error de autenticación. Por favor intenta usar el comando /start."
   },
   "domain_linking": {
-    "intro_title": "🔗 Vincular Tu Dominio",
-    "intro_description": "¡Conecta tu dominio existente a nuestros servicios de hosting!",
-    "features": {
-      "link_external": "• Conectar dominios registrados en otro lugar",
-      "verify_ownership": "• Verificar propiedad del dominio",
-      "configure_hosting": "• Configurar integración de hosting",
-      "smart_config": "Configuración Inteligente",
-      "dns_analysis": "• Análisis DNS automático",
-      "nameserver_mgmt": "• Gestión de servidores de nombres",
-      "cloudflare_support": "• Soporte de integración Cloudflare"
-    },
-    "messages": {
-      "get_started": "Ingresa tu nombre de dominio para comenzar el proceso de vinculación.",
-      "domain_format_example": "Ejemplo: ejemplo.com",
-      "analyzing": "Por favor espera mientras analizamos tu dominio...",
-      "analysis_complete": "Análisis de Dominio Completado",
-      "analysis_failed": "Fallo en el Análisis de Dominio",
-      "invalid_format": "Formato de Dominio Inválido",
-      "format_requirements": "Por favor ingresa un nombre de dominio válido (por ej., ejemplo.com)\\n\\n• No incluyas http:// o https://\\n• No incluyas www o subdominios\\n• Usa solo letras, números, puntos y guiones",
-      "how_it_works_title": "💡 Cómo Funciona la Vinculación de Dominio",
-      "step1_title": "1. Análisis del Dominio",
-      "step1_desc": "Analizar DNS y servidores de nombres",
-      "step2_title": "2. Verificación de Propiedad",
-      "step2_desc": "Verificar vía registro TXT",
-      "step3_title": "3. Configuración de Integración",
-      "step3_desc": "Configuración automática de hosting",
-      "requirements_title": "Requisitos:",
-      "requirements": "Acceso admin DNS • Dominio activo",
-      "supported_title": "Configuraciones Soportadas:",
-      "supported": "✅ DNS Estándar • Cloudflare • NS Personalizado"
-    },
     "buttons": {
-      "start_linking": "🔗 Iniciar Vinculación",
+      "check_status": "🔍 Verificar Estado",
       "how_it_works": "💡 Cómo Funciona",
       "link_domain": "🔗 Vincular Dominio",
-      "view_instructions": "📋 Ver Instrucciones",
-      "check_status": "🔍 Verificar Estado"
+      "start_linking": "🔗 Comenzar Vinculación",
+      "view_instructions": "📋 Ver Instrucciones"
     },
-    "input_prompt": "Por favor ingresa el nombre de dominio que deseas vincular:",
-    "analyzing": "🔄 <b>Analizando {domain}</b>\n\nPor favor espera mientras analizamos tu dominio...",
-    "analysis_complete": "✅ <b>Análisis Completado</b>\n\nTu dominio ha sido analizado exitosamente.",
-    "analysis_failed": "❌ <b>Fallo en el Análisis</b>\n\nNo pudimos analizar tu dominio. Por favor intenta de nuevo o contacta soporte."
+    "features": {
+      "cloudflare_support": "• Soporte de integración Cloudflare",
+      "configure_hosting": "• Configurar integración de hosting",
+      "dns_analysis": "• Análisis DNS automático",
+      "link_external": "• Conectar dominios registrados en otro lugar",
+      "nameserver_mgmt": "• Gestión de servidores de nombres",
+      "smart_config": "Configuración Inteligente",
+      "verify_ownership": "• Verificar propiedad del dominio"
+    },
+    "intro_description": "¡Conecte su dominio existente a nuestros servicios de hosting!",
+    "intro_title": "🔗 Vincule Su Dominio",
+    "messages": {
+      "analysis_complete": "Análisis de Dominio Completo",
+      "analysis_failed": "Fallo en el Análisis del Dominio",
+      "analyzing": "Por favor espere mientras analizamos su dominio...",
+      "domain_format_example": "Ejemplo: ejemplo.com",
+      "format_requirements": "Por favor ingrese un nombre de dominio válido (ej: ejemplo.com)\\n\\n• No incluya http:// o https://\\n• No incluya www o subdominios\\n• Use solo letras, números, puntos y guiones",
+      "get_started": "Ingrese su nombre de dominio para comenzar el proceso de vinculación.",
+      "how_it_works_title": "💡 Cómo Funciona la Vinculación de Dominio",
+      "invalid_format": "Formato de Dominio Inválido",
+      "requirements": "Acceso admin DNS • Dominio activo",
+      "requirements_title": "Requisitos:",
+      "step1_desc": "Análisis DNS y servidores de nombres",
+      "step1_title": "1. Análisis del Dominio",
+      "step2_desc": "Verificación vía TXT",
+      "step2_title": "2. Verificación de Propiedad",
+      "step3_desc": "Configuración auto de hosting",
+      "step3_title": "3. Configuración de Integración",
+      "supported": "✅ DNS estándar • Cloudflare • NS personalizados",
+      "supported_title": "Configuraciones Soportadas:"
+    }
   },
   "language": {
     "title": "🌍 Idioma",
@@ -1854,7 +1850,7 @@
       "crypto_error": "❌ Error al generar dirección de pago. Por favor inténtalo de nuevo.",
       "select_currency": "Seleccionar Criptomoneda:",
       "btc_label": "₿ Bitcoin (BTC)",
-      "eth_label": "Ξ Ethereum (ETH)",  
+      "eth_label": "Ξ Ethereum (ETH)",
       "usdt_label": "₮ Tether (USDT)",
       "ltc_label": "Ł Litecoin (LTC)",
       "qr_button": "📱 Código QR",
@@ -2012,44 +2008,27 @@
     "welcome_with_language": "¡Bienvenido a {platform_name}!\n\nTu idioma ha sido configurado a: {language}",
     "continue_onboarding": "Continuemos con tu registro..."
   },
-  "domain_linking": {
-    "buttons": {
-      "check_status": "🔍 Verificar Estado",
-      "how_it_works": "💡 Cómo Funciona",
-      "link_domain": "🔗 Vincular Dominio",
-      "start_linking": "🔗 Comenzar Vinculación",
-      "view_instructions": "📋 Ver Instrucciones"
+  "promo": {
+    "offshore_domains": {
+      "title": "<b>DOMINIOS OFFSHORE IGNORAN DMCA</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Lleva tu proyecto offshore con <b>dominios TLD de nivel pais que ignoran DMCA</b>.\n\nTLDs disponibles:\n\n<code>.is   </code> Islandia\n<code>.ru   </code> Rusia\n<code>.md   </code> Moldavia\n<code>.ws   </code> Samoa\n<code>.to   </code> Tonga\n<code>.cc   </code> Islas Cocos\n<code>.sx   </code> Sint Maarten\n<code>.ly   </code> Libia\n<code>.ro   </code> Rumania\n<code>.bg   </code> Bulgaria\n\n<b>Por que dominios offshore?</b>\nSin eliminaciones DMCA. Sin restricciones de contenido. Control total sobre tu presencia digital.\n\nPrecios desde <b>$2.99/ano</b> segun el TLD.",
+      "cta": "Registra tu dominio offshore ahora en @nomadlybot\n\nRegistro de dominios libre de DMCA de un proveedor offshore de confianza.",
+      "footer": "<i>HostBay - Tu Infraestructura Digital Offshore</i>"
     },
-    "features": {
-      "cloudflare_support": "• Soporte de integración Cloudflare",
-      "configure_hosting": "• Configurar integración de hosting",
-      "dns_analysis": "• Análisis DNS automático",
-      "link_external": "• Conectar dominios registrados en otro lugar",
-      "nameserver_mgmt": "• Gestión de servidores de nombres",
-      "smart_config": "Configuración Inteligente",
-      "verify_ownership": "• Verificar propiedad del dominio"
+    "offshore_hosting": {
+      "title": "<b>HOSTING cPANEL OFFSHORE</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Aloja tu sitio web en <b>servidores offshore que ignoran DMCA</b> con acceso completo a cPanel.\n\nLo que obtienes:\n\n<b>Plan Inicial</b> - $4.99/mes\nAlmacenamiento SSD + Ancho de Banda Ilimitado\n\n<b>Plan Profesional</b> - $9.99/mes\nMas Potencia + Soporte Prioritario\n\n<b>Plan Empresarial</b> - $19.99/mes\nRecursos Maximos + IP Dedicada\n\nTodos los planes incluyen:\nPanel de Control cPanel Completo\nInstalacion WordPress en Un Clic\nCertificados SSL Gratuitos\nInfraestructura que Ignora DMCA\nGarantia de Tiempo de Actividad 99.9%",
+      "cta": "Comienza con hosting offshore hoy.\n\nUsa /start para explorar planes de hosting.",
+      "footer": "<i>HostBay - Tu Infraestructura Digital Offshore</i>"
     },
-    "intro_description": "¡Conecte su dominio existente a nuestros servicios de hosting!",
-    "intro_title": "🔗 Vincule Su Dominio",
-    "messages": {
-      "analysis_complete": "Análisis de Dominio Completo",
-      "analysis_failed": "Fallo en el Análisis del Dominio",
-      "analyzing": "Por favor espere mientras analizamos su dominio...",
-      "domain_format_example": "Ejemplo: ejemplo.com",
-      "format_requirements": "Por favor ingrese un nombre de dominio válido (ej: ejemplo.com)\\n\\n• No incluya http:// o https://\\n• No incluya www o subdominios\\n• Use solo letras, números, puntos y guiones",
-      "get_started": "Ingrese su nombre de dominio para comenzar el proceso de vinculación.",
-      "how_it_works_title": "💡 Cómo Funciona la Vinculación de Dominio",
-      "invalid_format": "Formato de Dominio Inválido",
-      "requirements": "Acceso admin DNS • Dominio activo",
-      "requirements_title": "Requisitos:",
-      "step1_desc": "Análisis DNS y servidores de nombres",
-      "step1_title": "1. Análisis del Dominio",
-      "step2_desc": "Verificación vía TXT",
-      "step2_title": "2. Verificación de Propiedad",
-      "step3_desc": "Configuración auto de hosting",
-      "step3_title": "3. Configuración de Integración",
-      "supported": "✅ DNS estándar • Cloudflare • NS personalizados",
-      "supported_title": "Configuraciones Soportadas:"
+    "url_shortener": {
+      "title": "<b>ACORTADOR DE URLs PERSONALIZADO + REGISTRO DE DOMINIOS</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "body": "Buscas una <b>alternativa a Bitly</b> con tu propio dominio personalizado?\n\n@nomadlybot ofrece:\n\nURLs Cortas Personalizadas - Usa tu propio dominio para enlaces de marca\nAcortamiento Masivo - Acorta cientos de enlaces a la vez\nAnaliticas de Clics - Rastrea clics, ubicaciones y dispositivos\nDominios Libres de DMCA - Registra dominios offshore para tu acortador\nAcceso API - Integra con tus aplicaciones y flujos de trabajo\n\nPerfecto para marketers, creadores de contenido y negocios que necesitan gestion de enlaces sin restricciones.",
+      "cta": "Comienza a acortar URLs en @nomadlybot\n\nRegistra un dominio que ignora DMCA y configura tu propio acortador de URLs personalizado en minutos.",
+      "footer": "<i>HostBay - Tu Infraestructura Digital Offshore</i>"
+    },
+    "common": {
+      "footer": "<i>HostBay - Tu Infraestructura Digital Offshore</i>"
     }
   }
 }
