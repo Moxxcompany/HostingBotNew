@@ -144,7 +144,11 @@ async def _generate_dynamic_message(theme: str, lang: str) -> Optional[str]:
 
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
+    except ImportError:
+        logger.warning("📢 PROMO AI: emergentintegrations not available, skipping AI generation")
+        return None
 
+    try:
         chat = LlmChat(
             api_key=api_key,
             session_id=f"promo-{theme}-{lang}-{uuid.uuid4().hex[:8]}",
