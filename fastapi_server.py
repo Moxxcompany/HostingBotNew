@@ -1298,6 +1298,21 @@ async def lifespan(app: FastAPI):
     logger.info("   • POST /webhook/blockbee - BlockBee webhook")
     logger.info("=" * 80)
     
+    # EVENT-DRIVEN JOB PROCESSORS: Start as background tasks (not APScheduler)
+    # These wake instantly on webhook signal, with 5-min fallback safety poll
+    domain_processor_task = None
+    hosting_processor_task = None
+    try:
+        from services.job_queue_signals import (
+            run_event_driven_domain_processor,
+            run_event_driven_hosting_processor
+        )
+        domain_processor_task = asyncio.create_task(run_event_driven_domain_processor())
+        hosting_processor_task = asyncio.create_task(run_event_driven_hosting_processor())
+        logger.info("✅ Event-driven job processors started (domain + hosting)")
+    except Exception as evt_error:
+        logger.error(f"❌ Failed to start event-driven job processors: {evt_error}")
+    
     yield
     
     # Cleanup
