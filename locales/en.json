@@ -2016,21 +2016,16 @@
   "promo": {
     "offshore_domains": {
       "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE DOMAINS</b>\n<b>DMCA-Ignored Registration</b>\n━━━━━━━━━━━━━━━━━━━",
-      "body": "Register <b>country-level TLD domains</b> directly through HostBay:\n\n<code> .is </code>  Iceland       <code> .ru </code>  Russia\n<code> .md </code>  Moldova     <code> .ws </code>  Samoa\n<code> .to </code>  Tonga         <code> .cc </code>  Cocos Islands\n<code> .sx </code>  Sint Maarten  <code> .ly </code>  Libya\n<code> .ro </code>  Romania      <code> .bg </code>  Bulgaria\n\n<b>Why go offshore?</b>\n<i>No DMCA takedowns. No content policing.\nFull sovereignty over your digital assets.</i>\n\nPrices from <b>$2.99/year</b> — varies by TLD.\n\n<b>Use /start to search &amp; register instantly.</b>\n\n━━━━━━━━━━━━━━━━━━━\n\nNeed <b>hardened DMCA-proof domains</b>?\n\n@nomadlybot provides registration through a <b>dedicated offshore DMCA-free registrar</b> — purpose-built for maximum takedown resistance.",
-      "cta": "<b>Country TLDs</b> → Use <code>/start</code> right here\n<b>DMCA-hardened domains</b> → @nomadlybot"
+      "body": "Register <b>country-level TLD domains</b> directly through HostBay:\n\n<code> .is </code>  Iceland       <code> .ru </code>  Russia\n<code> .md </code>  Moldova     <code> .ws </code>  Samoa\n<code> .to </code>  Tonga         <code> .cc </code>  Cocos Islands\n<code> .sx </code>  Sint Maarten  <code> .ly </code>  Libya\n<code> .ro </code>  Romania      <code> .bg </code>  Bulgaria\n\n<b>Why go offshore?</b>\n<i>No DMCA takedowns. No content policing.\nFull sovereignty over your digital assets.</i>\n\nPrices from <b>$2.99/year</b> — varies by TLD.\n\n<b>Use /start to search &amp; register instantly.</b>\n\n━━━━━━━━━━━━━━━━━━━\n\nNeed <b>hardened DMCA-proof domains</b>?",
+      "cta": "<b>Use /start to search & register your offshore domain.</b>"
     },
     "offshore_hosting": {
       "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE cPANEL HOSTING</b>\n<b>DMCA-Ignored Servers</b>\n━━━━━━━━━━━━━━━━━━━",
       "body": "Host on <b>offshore infrastructure</b> with full cPanel control:\n\n<b>STARTER</b> — <code>$4.99/mo</code>\nSSD Storage · Unlimited Bandwidth\n\n<b>PROFESSIONAL</b> — <code>$9.99/mo</code>\nMore Power · Priority Support\n\n<b>BUSINESS</b> — <code>$19.99/mo</code>\nMax Resources · Dedicated IP\n\n<i>Every plan includes:</i>\n✓ Full cPanel Control Panel\n✓ One-Click WordPress\n✓ Free SSL Certificates\n✓ DMCA-Ignored Infrastructure\n✓ 99.9% Uptime SLA",
       "cta": "<b>Use /start to explore hosting plans.</b>"
     },
-    "url_shortener": {
-      "title": "━━━━━━━━━━━━━━━━━━━\n<b>CUSTOM URL SHORTENER</b>\n<b>Your Domain. Your Links. No Limits.</b>\n━━━━━━━━━━━━━━━━━━━",
-      "body": "Tired of Bitly restrictions?\n\n@nomadlybot gives you:\n\n✓ <b>Custom Short URLs</b> — your own branded domain\n✓ <b>Bulk Shortening</b> — hundreds of links at once\n✓ <b>Click Analytics</b> — locations, devices, referrers\n✓ <b>DMCA-Free Domains</b> — register offshore for your shortener\n✓ <b>API Access</b> — integrate with your stack\n\n<i>Perfect for marketers, content creators, and businesses\nthat need link management without restrictions.</i>",
-      "cta": "<b>Start at</b> → @nomadlybot\n\nRegister a DMCA-ignored domain and launch your own\ncustom URL shortener in minutes."
-    },
     "common": {
-      "footer": "━━━━━━━━━━━━━━━━━━━\n@nomadlybot — <i>DMCA-Free Domains · URL Shortener · Offshore Tools</i>\n━━━━━━━━━━━━━━━━━━━",
+      "footer": "━━━━━━━━━━━━━━━━━━━\n<i>HostBay — Offshore Domains · cPanel Hosting · RDP Servers</i>\n━━━━━━━━━━━━━━━━━━━",
       "opt_out_hint": "<i>Send /stop_promos to unsubscribe · /set_timezone to adjust delivery time</i>"
     },
     "opt_out": {
