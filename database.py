@@ -6204,7 +6204,7 @@ async def cleanup_stale_and_expired_payments() -> int:
         
         # Get payments with expires_at for intelligent grace period handling
         expired_candidates = await execute_query(
-            """SELECT id, user_id, order_id, amount, currency, crypto_currency, payment_provider, 
+            """SELECT id, user_id, order_id, amount, base_amount, currency, crypto_currency, payment_provider, 
                       status, created_at, expires_at,
                       EXTRACT(EPOCH FROM (NOW() - expires_at))/60 as minutes_past_expiry,
                       EXTRACT(EPOCH FROM (NOW() - created_at))/60 as age_minutes
