@@ -153,8 +153,9 @@ async def _generate_dynamic_message(theme: str, lang: str) -> Optional[str]:
 
         response = await chat.send_message(UserMessage(text=user_prompt))
         if response and len(response.strip()) > 20:
-            logger.info(f"📢 PROMO AI: Generated dynamic '{theme}' message in {lang} ({len(response)} chars)")
-            return response.strip()
+            clean = _sanitize_html(response)
+            logger.info(f"📢 PROMO AI: Generated dynamic '{theme}' message in {lang} ({len(clean)} chars)")
+            return clean
         return None
     except Exception as e:
         logger.error(f"📢 PROMO AI ERROR: {e}")
