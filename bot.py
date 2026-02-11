@@ -465,6 +465,11 @@ async def main_bot_loop():
         app.add_handler(CommandHandler("link", link_domain_command))
         app.add_handler(CommandHandler("renew", renew_hosting_command))
         
+        # Promo opt-out/opt-in and timezone commands
+        app.add_handler(CommandHandler("stop_promos", stop_promos_command))
+        app.add_handler(CommandHandler("start_promos", start_promos_command))
+        app.add_handler(CommandHandler("set_timezone", set_timezone_command))
+        
         # Add callback query handler for all inline keyboard interactions
         app.add_handler(CallbackQueryHandler(handle_callback))
         
