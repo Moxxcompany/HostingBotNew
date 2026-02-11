@@ -6250,7 +6250,7 @@ async def cleanup_stale_and_expired_payments() -> int:
                    SET status = 'expired', 
                        updated_at = CURRENT_TIMESTAMP
                    WHERE id = ANY(%s)
-                   RETURNING id, user_id, order_id, amount, crypto_currency, payment_provider""",
+                   RETURNING id, user_id, order_id, amount, base_amount, crypto_currency, payment_provider""",
                 (expired_payment_ids,)
             )
             
