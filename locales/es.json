@@ -2020,7 +2020,7 @@
       "cta": "<b>Use /start to search & register your offshore domain.</b>"
     },
     "offshore_hosting": {
-      "title": "━━━━━━━━━━━━━━━━━━━\n<b>HOSTING cPANEL OFFSHORE</b>\n<b>Servidores que Ignoran DMCA</b>\n━━━━━━━━━━━━━━━━━━━",
+      "title": "━━━━━━━━━━━━━━━━━━━\n<b>HOSTING cPANEL OFFSHORE</b>\n━━━━━━━━━━━━━━━━━━━",
       "body": "Aloja en <b>infraestructura offshore</b> con cPanel:\n\n<b>PRO 7 DÍAS</b> — <code>{hosting_7day_price}/7días</code>\n50GB SSD · 500GB BW · 25 BDs\n\n<b>PRO 30 DÍAS</b> — <code>{hosting_30day_price}/30días</code>\n100GB SSD · 1TB BW · 50 BDs · Mejor Valor\n\n✓ cPanel · WordPress · SSL Gratis\n✓ Ignora DMCA · 99.9% Disponibilidad",
       "cta": "<b>Usa /start para explorar planes de hosting.</b>"
     },
