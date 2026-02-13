@@ -2044,7 +2044,7 @@
     },
     "rdp_servers": {
       "title": "━━━━━━━━━━━━━━━━━━━\n<b>WINDOWS RDP SERVERS</b>\n<b>Your Offshore Cloud Desktop</b>\n━━━━━━━━━━━━━━━━━━━",
-      "body": "Deploy <b>Windows RDP servers</b> on offshore cloud infrastructure:\n\n- <b>Full Admin Access</b> — your server, your rules\n- <b>SSD Storage</b> — fast and reliable\n- <b>Global Locations</b> — US, Europe, Asia, South America\n- <b>Dedicated vCPUs</b> — no shared resources\n- <b>Instant Deploy</b> — ready in minutes\n\n<i>Perfect for remote work, running bots,\nautomation, or hosting Windows apps offshore.</i>",
+      "body": "Deploy <b>Windows RDP servers</b> offshore:\n\n- <b>Full Admin Access</b> — your server, your rules\n- <b>SSD + Dedicated vCPUs</b> — fast and reliable\n- <b>Global Locations</b> — US, EU, Asia, South America\n- <b>Instant Deploy</b> — ready in minutes",
       "cta": "<b>Use /start to browse RDP server plans.</b>"
     }
   }
