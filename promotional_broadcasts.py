@@ -78,26 +78,22 @@ def _build_theme_briefs() -> dict:
         "offshore_domains": {
             "product": "Offshore DMCA-Ignored Domain Registration",
             "details": (
-                "HostBay lets users register country-level TLD domains: "
-                ".is (Iceland), .ru (Russia), .md (Moldova), .ws (Samoa), .to (Tonga), "
-                ".cc (Cocos Islands), .sx (Sint Maarten), .ly (Libya), .ro (Romania), .bg (Bulgaria). "
-                f"Prices from {domain_min}/year — varies by TLD. No DMCA takedowns. "
-                "Users type /start to search & register."
+                "HostBay registers offshore TLD domains: "
+                ".is, .ru, .md, .ws, .to, .cc, .sx, .ly, .ro. "
+                f"From {domain_min}/year. No DMCA takedowns. "
+                "/start to search & register."
             ),
             "cta_options": [
                 "Use /start to search & register your offshore domain",
             ],
         },
         "offshore_hosting": {
-            "product": "Offshore cPanel Hosting (DMCA-Ignored Servers)",
+            "product": "Offshore cPanel Hosting (DMCA-Ignored)",
             "details": (
-                f"Two plans: PRO 7 DAYS ${hosting['7day']:.2f} for 7 days "
-                f"(50GB SSD, 500GB bandwidth, 25 databases, cPanel access, daily backups), "
-                f"PRO 30 DAYS ${hosting['30day']:.2f} for 30 days "
-                f"(100GB SSD, 1TB bandwidth, 50 databases, priority support, best value — save 44%). "
-                "Every plan: full cPanel, one-click WordPress, free SSL, "
-                "DMCA-ignored infrastructure, 99.9% uptime SLA. "
-                "Users type /start to explore plans."
+                f"PRO 7 DAYS ${hosting['7day']:.2f} (50GB SSD, 500GB BW, 25 DBs). "
+                f"PRO 30 DAYS ${hosting['30day']:.2f} (100GB SSD, 1TB BW, 50 DBs, best value). "
+                "cPanel, WordPress, free SSL, DMCA-ignored, 99.9% uptime. "
+                "/start to explore plans."
             ),
             "cta_options": [
                 "/start to explore hosting plans",
@@ -106,12 +102,9 @@ def _build_theme_briefs() -> dict:
         "rdp_servers": {
             "product": "Windows RDP Servers (Offshore Cloud VPS)",
             "details": (
-                "HostBay offers Windows RDP servers powered by Vultr cloud infrastructure. "
-                "Multiple plans available with SSD storage, dedicated vCPUs, and full admin access. "
-                "Global locations: US, Europe, Asia, South America. "
-                "Perfect for remote desktop work, running bots, automation, or hosting Windows apps offshore. "
-                "Plans start from affordable monthly pricing. "
-                "Users type /start to browse RDP plans and deploy instantly."
+                "Windows RDP on Vultr cloud. SSD, dedicated vCPUs, full admin access. "
+                "Global locations: US, EU, Asia, South America. Deploy in minutes. "
+                "/start to browse RDP plans."
             ),
             "cta_options": [
                 "Use /start to browse RDP server plans",
@@ -125,19 +118,19 @@ THEME_BRIEFS = _build_theme_briefs()
 LANG_NAMES = {"en": "English", "es": "Spanish", "fr": "French"}
 
 SYSTEM_PROMPT = """\
-You are a friendly, persuasive copywriter for HostBay, an offshore hosting & domain service on Telegram.
+You are a friendly copywriter for HostBay, an offshore hosting & domain service on Telegram.
 
 Rules:
-- Write ONE short promotional message (max 800 chars) using ONLY Telegram HTML tags.
+- Write ONE short promotional message (max 600 chars) using ONLY Telegram HTML tags.
 - ONLY allowed tags: <b>bold</b>, <i>italic</i>, <code>monospace</code>. Nothing else.
 - NEVER use markdown syntax like **bold**, _italic_, or bullet characters like •. Use plain dashes - instead.
-- Tone: friendly, warm, casual-professional. Like a helpful friend sharing a cool tip, NOT a pushy ad.
-- Be creative: vary greetings, angles, hooks, analogies. Never start with the same opening twice.
-- Include the key product facts but rephrase naturally — don't just list specs robotically.
+- Tone: friendly, casual-professional. Like a helpful friend sharing a tip, NOT a pushy ad.
+- Be creative: vary greetings, angles, hooks. Never start with the same opening twice.
+- Include key product facts but keep it concise — no long spec lists.
 - End with a clear call-to-action using the provided CTA.
 - Do NOT add any footer, separator lines, or opt-out text — those are appended automatically.
 - Do NOT mention @nomadlybot or any other bots. Only promote HostBay services.
-- Max 2-3 emoji per message. Keep it clean.
+- Max 2 emoji per message. Keep it clean.
 - Write entirely in {language}.\
 """
 
