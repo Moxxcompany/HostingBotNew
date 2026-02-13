@@ -186,11 +186,35 @@ async def _generate_dynamic_message(theme: str, lang: str) -> Optional[str]:
         return None
 
 
+def _get_promo_price_vars() -> dict:
+    """Build the template variables for locale promo strings from env config."""
+    hosting = _get_real_hosting_prices()
+    return {
+        'hosting_7day_price': f"${hosting['7day']:.2f}",
+        'hosting_30day_price': f"${hosting['30day']:.2f}",
+        'domain_min_price': _get_real_domain_min_price(),
+    }
+
+
 def _build_static_message(theme: str, lang: str) -> str:
-    """Build the original static promo message from locale strings (fallback)."""
+    """Build the static promo message from locale strings with dynamic prices injected."""
+    price_vars = _get_promo_price_vars()
     title = t(f'promo.{theme}.title', lang)
     body = t(f'promo.{theme}.body', lang)
     cta = t(f'promo.{theme}.cta', lang)
+    # Inject real prices into any {placeholder} tokens in the locale strings
+    try:
+        title = title.format(**price_vars)
+    except (KeyError, ValueError):
+        pass
+    try:
+        body = body.format(**price_vars)
+    except (KeyError, ValueError):
+        pass
+    try:
+        cta = cta.format(**price_vars)
+    except (KeyError, ValueError):
+        pass
     return f"{title}\n\n{body}\n\n{cta}"
 
 
