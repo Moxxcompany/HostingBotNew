@@ -2016,12 +2016,12 @@
   "promo": {
     "offshore_domains": {
       "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE DOMAINS</b>\n<b>DMCA-Ignored Registration</b>\n━━━━━━━━━━━━━━━━━━━",
-      "body": "Register <b>country-level TLD domains</b> directly through HostBay:\n\n<code> .is </code>  Iceland       <code> .ru </code>  Russia\n<code> .md </code>  Moldova     <code> .ws </code>  Samoa\n<code> .to </code>  Tonga         <code> .cc </code>  Cocos Islands\n<code> .sx </code>  Sint Maarten  <code> .ly </code>  Libya\n<code> .ro </code>  Romania      <code> .bg </code>  Bulgaria\n\n<b>Why go offshore?</b>\n<i>No DMCA takedowns. No content policing.\nFull sovereignty over your digital assets.</i>\n\nPrices from <b>{domain_min_price}/year</b> — varies by TLD.\n\n<b>Use /start to search &amp; register instantly.</b>\n\n━━━━━━━━━━━━━━━━━━━\n\nNeed <b>hardened DMCA-proof domains</b>?",
+      "body": "Register <b>offshore TLD domains</b> via HostBay:\n\n<code>.is</code> Iceland  <code>.ru</code> Russia  <code>.cc</code> Cocos\n<code>.md</code> Moldova  <code>.ws</code> Samoa  <code>.ly</code> Libya\n<code>.to</code> Tonga  <code>.sx</code> Sint Maarten  <code>.ro</code> Romania\n\nNo DMCA takedowns. No content policing.\nPrices from <b>{domain_min_price}/year</b>.",
       "cta": "<b>Use /start to search & register your offshore domain.</b>"
     },
     "offshore_hosting": {
       "title": "━━━━━━━━━━━━━━━━━━━\n<b>OFFSHORE cPANEL HOSTING</b>\n<b>DMCA-Ignored Servers</b>\n━━━━━━━━━━━━━━━━━━━",
-      "body": "Host on <b>offshore infrastructure</b> with full cPanel control:\n\n<b>PRO 7 DAYS</b> — <code>{hosting_7day_price}/7days</code>\n50GB SSD · 500GB Bandwidth · 25 Databases\n\n<b>PRO 30 DAYS</b> — <code>{hosting_30day_price}/30days</code>\n100GB SSD · 1TB Bandwidth · 50 Databases · Best Value\n\n<i>Every plan includes:</i>\n✓ Full cPanel Control Panel\n✓ One-Click WordPress\n✓ Free SSL Certificates\n✓ DMCA-Ignored Infrastructure\n✓ 99.9% Uptime SLA",
+      "body": "Host on <b>offshore infrastructure</b> with full cPanel:\n\n<b>PRO 7 DAYS</b> — <code>{hosting_7day_price}/7days</code>\n50GB SSD · 500GB BW · 25 DBs\n\n<b>PRO 30 DAYS</b> — <code>{hosting_30day_price}/30days</code>\n100GB SSD · 1TB BW · 50 DBs · Best Value\n\n✓ cPanel · WordPress · Free SSL\n✓ DMCA-Ignored · 99.9% Uptime",
       "cta": "<b>Use /start to explore hosting plans.</b>"
     },
     "common": {
