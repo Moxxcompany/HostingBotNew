@@ -58,49 +58,69 @@ PROMO_SLOTS = {
 _message_cache: Dict[str, str] = {}
 
 # Product briefs fed to GPT so it has accurate facts
-THEME_BRIEFS = {
-    "offshore_domains": {
-        "product": "Offshore DMCA-Ignored Domain Registration",
-        "details": (
-            "HostBay lets users register country-level TLD domains: "
-            ".is (Iceland), .ru (Russia), .md (Moldova), .ws (Samoa), .to (Tonga), "
-            ".cc (Cocos Islands), .sx (Sint Maarten), .ly (Libya), .ro (Romania), .bg (Bulgaria). "
-            "Prices from $2.99/year. No DMCA takedowns. "
-            "Users type /start to search & register."
-        ),
-        "cta_options": [
-            "Use /start to search & register your offshore domain",
-        ],
-    },
-    "offshore_hosting": {
-        "product": "Offshore cPanel Hosting (DMCA-Ignored Servers)",
-        "details": (
-            "Three plans: STARTER $4.99/mo (SSD, unlimited bandwidth), "
-            "PROFESSIONAL $9.99/mo (more power, priority support), "
-            "BUSINESS $19.99/mo (max resources, dedicated IP). "
-            "Every plan: full cPanel, one-click WordPress, free SSL, "
-            "DMCA-ignored infrastructure, 99.9% uptime SLA. "
-            "Users type /start to explore plans."
-        ),
-        "cta_options": [
-            "/start to explore hosting plans",
-        ],
-    },
-    "rdp_servers": {
-        "product": "Windows RDP Servers (Offshore Cloud VPS)",
-        "details": (
-            "HostBay offers Windows RDP servers powered by Vultr cloud infrastructure. "
-            "Multiple plans available with SSD storage, dedicated vCPUs, and full admin access. "
-            "Global locations: US, Europe, Asia, South America. "
-            "Perfect for remote desktop work, running bots, automation, or hosting Windows apps offshore. "
-            "Plans start from affordable monthly pricing. "
-            "Users type /start to browse RDP plans and deploy instantly."
-        ),
-        "cta_options": [
-            "Use /start to browse RDP server plans",
-        ],
-    },
-}
+def _get_real_hosting_prices() -> dict:
+    """Fetch actual hosting prices from environment (same source as cpanel.py and database.py)"""
+    plan_7_price = float(os.environ.get('HOSTING_PLAN_7_DAYS_PRICE', '40.00'))
+    plan_30_price = float(os.environ.get('HOSTING_PLAN_30_DAYS_PRICE', '100.00'))
+    return {'7day': plan_7_price, '30day': plan_30_price}
+
+def _get_real_domain_min_price() -> str:
+    """Fetch actual minimum domain price from environment (same source as pricing_utils.py)"""
+    min_price = float(os.environ.get('DOMAIN_MINIMUM_PRICE', '30.00'))
+    return f"${min_price:.2f}"
+
+def _build_theme_briefs() -> dict:
+    """Build THEME_BRIEFS dynamically using real prices from environment config"""
+    hosting = _get_real_hosting_prices()
+    domain_min = _get_real_domain_min_price()
+
+    return {
+        "offshore_domains": {
+            "product": "Offshore DMCA-Ignored Domain Registration",
+            "details": (
+                "HostBay lets users register country-level TLD domains: "
+                ".is (Iceland), .ru (Russia), .md (Moldova), .ws (Samoa), .to (Tonga), "
+                ".cc (Cocos Islands), .sx (Sint Maarten), .ly (Libya), .ro (Romania), .bg (Bulgaria). "
+                f"Prices from {domain_min}/year — varies by TLD. No DMCA takedowns. "
+                "Users type /start to search & register."
+            ),
+            "cta_options": [
+                "Use /start to search & register your offshore domain",
+            ],
+        },
+        "offshore_hosting": {
+            "product": "Offshore cPanel Hosting (DMCA-Ignored Servers)",
+            "details": (
+                f"Two plans: PRO 7 DAYS ${hosting['7day']:.2f} for 7 days "
+                f"(50GB SSD, 500GB bandwidth, 25 databases, cPanel access, daily backups), "
+                f"PRO 30 DAYS ${hosting['30day']:.2f} for 30 days "
+                f"(100GB SSD, 1TB bandwidth, 50 databases, priority support, best value — save 44%). "
+                "Every plan: full cPanel, one-click WordPress, free SSL, "
+                "DMCA-ignored infrastructure, 99.9% uptime SLA. "
+                "Users type /start to explore plans."
+            ),
+            "cta_options": [
+                "/start to explore hosting plans",
+            ],
+        },
+        "rdp_servers": {
+            "product": "Windows RDP Servers (Offshore Cloud VPS)",
+            "details": (
+                "HostBay offers Windows RDP servers powered by Vultr cloud infrastructure. "
+                "Multiple plans available with SSD storage, dedicated vCPUs, and full admin access. "
+                "Global locations: US, Europe, Asia, South America. "
+                "Perfect for remote desktop work, running bots, automation, or hosting Windows apps offshore. "
+                "Plans start from affordable monthly pricing. "
+                "Users type /start to browse RDP plans and deploy instantly."
+            ),
+            "cta_options": [
+                "Use /start to browse RDP server plans",
+            ],
+        },
+    }
+
+# Build briefs dynamically — re-read on each promo cycle via function call
+THEME_BRIEFS = _build_theme_briefs()
 
 LANG_NAMES = {"en": "English", "es": "Spanish", "fr": "French"}
 
