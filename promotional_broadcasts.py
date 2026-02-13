@@ -204,7 +204,11 @@ async def build_promo_message(theme: str, lang: str) -> str:
     """
     Build a promo message — dynamic (AI) with static fallback.
     Caches per hour so we only call GPT once per theme×lang per hour.
+    Refreshes THEME_BRIEFS each cycle to pick up any env var changes.
     """
+    global THEME_BRIEFS
+    THEME_BRIEFS = _build_theme_briefs()  # Refresh prices from env on each cycle
+
     now = datetime.now(timezone.utc)
     cache_key = f"{now.strftime('%Y-%m-%d-%H')}:{theme}:{lang}"
 
