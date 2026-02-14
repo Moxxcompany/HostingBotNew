@@ -473,6 +473,11 @@ async def main_bot_loop():
         # Add callback query handler for all inline keyboard interactions
         app.add_handler(CallbackQueryHandler(handle_callback))
         
+        # Group notification: auto-detect when bot is added/removed from groups
+        from telegram.ext import ChatMemberHandler
+        from group_notifications import handle_my_chat_member
+        app.add_handler(ChatMemberHandler(handle_my_chat_member, ChatMemberHandler.MY_CHAT_MEMBER))
+        
         # Add message handlers with priority groups
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_credit_text), group=-2)
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_broadcast_text), group=-1)
@@ -485,6 +490,15 @@ async def main_bot_loop():
         await app.initialize()
         await app.start()
         logger.info("✅ Application initialized and started successfully")
+        
+        # Set bot username for group notifications
+        try:
+            from group_notifications import set_bot_username
+            bot_info = await app.bot.get_me()
+            if bot_info and bot_info.username:
+                set_bot_username(bot_info.username)
+        except Exception as username_err:
+            logger.warning(f"Could not set bot username for group notifications: {username_err}")
         
         # Get current loop for webhook handler
         current_loop = asyncio.get_running_loop()
