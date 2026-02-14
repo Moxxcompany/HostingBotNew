@@ -9554,6 +9554,17 @@ async def process_domain_registration(query, domain_name, order):
         elif orchestrator_result.get('success'):
             logger.info(f"✅ HANDLERS: Domain registration completed via orchestrator: {domain_name}")
             # Orchestrator already sent success notification with buttons
+            
+            # GROUP NOTIFICATION: Broadcast wallet domain purchase to groups
+            try:
+                from group_notifications import notify_domain_purchase
+                asyncio.create_task(notify_domain_purchase(
+                    username=query.from_user.username,
+                    first_name=query.from_user.first_name,
+                    domain_name=domain_name
+                ))
+            except Exception as grp_err:
+                logger.warning(f"Group notification (wallet domain) failed: {grp_err}")
         else:
             logger.warning(f"⚠️ HANDLERS: Unexpected orchestrator result for {domain_name}: {orchestrator_result}")
             await safe_edit_message(query, f"⚠️ Registration Status Unknown\n\nPlease check your domains list.")
