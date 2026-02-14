@@ -2,6 +2,12 @@
 Group Notification System for HostBay Bot
 Broadcasts persuasive marketing events to all registered Telegram groups.
 Auto-detects group additions, masks usernames, and sends hype+trust messages.
+
+Fixes applied (matching NomadlyNew reference implementation):
+- Direct bot reference instead of fragile builtins hack
+- In-memory fallback set when DB is unavailable
+- Fallback notification targets (TELEGRAM_NOTIFY_GROUP_ID + admin)
+- Table creation moved to init_database() (no per-call CREATE TABLE)
 """
 
 import os
@@ -13,21 +19,57 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+# ─── Direct Bot Reference ────────────────────────────────────────────────────
+# Set once at startup via set_bot_reference(), avoids fragile builtins access.
+_bot_instance = None
+
+def set_bot_reference(bot):
+    """Store a direct reference to the bot instance. Called at startup."""
+    global _bot_instance
+    _bot_instance = bot
+    logger.info("Group notifications: bot reference set")
+
+def _get_bot():
+    """Get the bot instance, with fallback to builtins/module globals."""
+    global _bot_instance
+    if _bot_instance is not None:
+        return _bot_instance
+    # Fallback: try builtins (legacy path)
+    try:
+        import builtins
+        bot_app = getattr(builtins, '_global_bot_application', None)
+        if bot_app and hasattr(bot_app, 'bot'):
+            return bot_app.bot
+    except Exception:
+        pass
+    # Fallback: try fastapi_server module
+    try:
+        from fastapi_server import _bot_application_instance
+        if _bot_application_instance and hasattr(_bot_application_instance, 'bot'):
+            return _bot_application_instance.bot
+    except Exception:
+        pass
+    return None
+
 # Bot username - resolved once at runtime
 _bot_username: Optional[str] = None
 
 def _get_bot_username() -> str:
-    """Get bot username, with fallback"""
     global _bot_username
     if _bot_username:
         return _bot_username
     return os.getenv('BOT_USERNAME', 'HostBay_bot')
 
 def set_bot_username(username: str):
-    """Set the bot username after bot initializes"""
     global _bot_username
     _bot_username = username.lstrip('@')
     logger.info(f"Group notifications: bot username set to @{_bot_username}")
+
+
+# ─── In-Memory Fallback for Groups ──────────────────────────────────────────
+# If the database is unavailable, we still track groups in memory so
+# notifications aren't silently lost.
+_in_memory_groups: Dict[int, str] = {}
 
 
 def mask_username(username: Optional[str], first_name: Optional[str] = None) -> str:
@@ -38,39 +80,21 @@ def mask_username(username: Optional[str], first_name: Optional[str] = None) -> 
             return f"@{'*' * 4}"
         visible = clean[:2]
         return f"@{visible}{'*' * max(3, len(clean) - 2)}"
-    
-    # Fallback to first_name masking
     if first_name:
         if len(first_name) <= 2:
             return f"{first_name[0]}***"
         return f"{first_name[:2]}{'*' * max(3, len(first_name) - 2)}"
-    
     return "Someone"
 
 
-# ─── Group Registration (PostgreSQL) ─────────────────────────────────────────
-
-async def _ensure_groups_table():
-    """Create notification_groups table if it doesn't exist"""
-    try:
-        from database import execute_update
-        await execute_update("""
-            CREATE TABLE IF NOT EXISTS notification_groups (
-                id SERIAL PRIMARY KEY,
-                chat_id BIGINT UNIQUE NOT NULL,
-                chat_title TEXT,
-                added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                is_active BOOLEAN DEFAULT TRUE
-            )
-        """)
-    except Exception as e:
-        logger.warning(f"Could not ensure notification_groups table: {e}")
-
+# ─── Group Registration (PostgreSQL + in-memory fallback) ────────────────────
 
 async def register_group(chat_id: int, chat_title: Optional[str] = None):
-    """Register a group chat for event notifications"""
+    """Register a group chat for event notifications."""
+    # Always keep in-memory record
+    _in_memory_groups[chat_id] = chat_title or ""
+
     try:
-        await _ensure_groups_table()
         from database import execute_update
         await execute_update("""
             INSERT INTO notification_groups (chat_id, chat_title, is_active)
@@ -81,11 +105,13 @@ async def register_group(chat_id: int, chat_title: Optional[str] = None):
         """, (chat_id, chat_title))
         logger.info(f"Registered group for notifications: {chat_title} ({chat_id})")
     except Exception as e:
-        logger.error(f"Failed to register group {chat_id}: {e}")
+        logger.error(f"Failed to register group {chat_id} in DB (in-memory fallback active): {e}")
 
 
 async def unregister_group(chat_id: int):
-    """Mark a group as inactive when bot is removed"""
+    """Mark a group as inactive when bot is removed."""
+    _in_memory_groups.pop(chat_id, None)
+
     try:
         from database import execute_update
         await execute_update("""
@@ -97,16 +123,22 @@ async def unregister_group(chat_id: int):
 
 
 async def get_active_groups() -> List[Dict[str, Any]]:
-    """Get all active notification groups"""
+    """Get all active notification groups (DB first, in-memory fallback)."""
     try:
         from database import execute_query
         groups = await execute_query(
             "SELECT chat_id, chat_title FROM notification_groups WHERE is_active = TRUE"
         )
-        return groups or []
+        if groups:
+            return groups
     except Exception as e:
-        logger.warning(f"Failed to fetch active groups: {e}")
-        return []
+        logger.warning(f"Failed to fetch active groups from DB: {e}")
+
+    # Fallback to in-memory groups
+    if _in_memory_groups:
+        logger.info(f"Using {len(_in_memory_groups)} in-memory fallback group(s)")
+        return [{"chat_id": cid, "chat_title": title} for cid, title in _in_memory_groups.items()]
+    return []
 
 
 # ─── Chat Member Handler ─────────────────────────────────────────────────────
@@ -154,52 +186,63 @@ async def handle_my_chat_member(update, context):
         logger.error(f"Error handling my_chat_member update: {e}")
 
 
-# ─── Event Broadcasting ──────────────────────────────────────────────────────
+# ─── Event Broadcasting (with fallback targets) ──────────────────────────────
 
 async def _broadcast_to_groups(message: str):
-    """Send a message to all registered active groups"""
-    groups = await get_active_groups()
-    if not groups:
-        return
-
-    # Get bot application
-    bot = None
-    try:
-        import builtins
-        bot_app = getattr(builtins, '_global_bot_application', None)
-        if bot_app and hasattr(bot_app, 'bot'):
-            bot = bot_app.bot
-    except Exception:
-        pass
-
-    if not bot:
-        try:
-            from fastapi_server import _bot_application_instance
-            if _bot_application_instance and hasattr(_bot_application_instance, 'bot'):
-                bot = _bot_application_instance.bot
-        except Exception:
-            pass
-
+    """Send a message to all registered active groups + fallback targets."""
+    bot = _get_bot()
     if not bot:
         logger.warning("No bot instance available for group broadcast")
         return
 
+    sent_to = set()
+
+    # 1. Always send to configured notification group (if set)
+    notify_group_id = os.getenv('TELEGRAM_NOTIFY_GROUP_ID')
+    if notify_group_id:
+        try:
+            gid = int(notify_group_id)
+            sent_to.add(gid)
+            await bot.send_message(chat_id=gid, text=message, parse_mode='HTML')
+        except Exception as e:
+            logger.warning(f"Configured notify group error ({notify_group_id}): {e}")
+
+    # 2. Always send to admin chat as fallback
+    admin_chat_id = os.getenv('TELEGRAM_ADMIN_CHAT_ID')
+    if admin_chat_id:
+        try:
+            aid = int(admin_chat_id)
+            if aid not in sent_to:
+                sent_to.add(aid)
+                await bot.send_message(chat_id=aid, text=message, parse_mode='HTML')
+        except Exception as e:
+            logger.warning(f"Admin notify error: {e}")
+
+    # 3. Send to all auto-registered groups
+    groups = await get_active_groups()
     for group in groups:
+        gid = group['chat_id']
+        if gid in sent_to:
+            continue  # skip duplicates
+        sent_to.add(gid)
+
         try:
             await bot.send_message(
-                chat_id=group['chat_id'],
+                chat_id=gid,
                 text=message,
                 parse_mode='HTML'
             )
         except Exception as e:
             error_str = str(e).lower()
-            # If bot was kicked or chat not found, deactivate
-            if any(phrase in error_str for phrase in ['chat not found', 'bot was kicked', 'forbidden', 'bot was blocked']):
-                await unregister_group(group['chat_id'])
-                logger.info(f"Auto-unregistered group {group['chat_id']} - bot removed")
+            if any(phrase in error_str for phrase in [
+                'chat not found', 'bot was kicked', 'forbidden',
+                'bot was blocked', 'bot is not a member'
+            ]):
+                await unregister_group(gid)
+                logger.info(f"Auto-unregistered group {gid} — bot removed")
             else:
-                logger.warning(f"Failed to send to group {group['chat_id']}: {e}")
-        
+                logger.warning(f"Failed to send to group {gid}: {e}")
+
         # Small delay to avoid flood limits
         await asyncio.sleep(0.3)
 
@@ -262,7 +305,6 @@ def _build_event_message(
     detail_line: Optional[str] = None,
     extra_line: Optional[str] = None
 ) -> str:
-    """Build a formatted event message with hype + trust tone"""
     bot_user = _get_bot_username()
     emoji = random.choice(_EMOJIS_BY_EVENT.get(event_type, ['🔔']))
     action_text = random.choice(messages_pool)
@@ -270,14 +312,11 @@ def _build_event_message(
     lines = [
         f"{emoji} <b>{masked_user}</b> {action_text}!",
     ]
-
     if detail_line:
         lines.append(f"    {detail_line}")
-
     if extra_line:
         lines.append(f"    {extra_line}")
 
-    # Trust / social proof footer
     trust_footers = [
         "Join thousands who trust HostBay for domains, hosting & more.",
         "HostBay — where builders launch their ideas.",
@@ -295,7 +334,6 @@ def _build_event_message(
 # ─── Public Event Functions (called from handlers/webhook_handler) ────────────
 
 async def notify_new_user(username: Optional[str] = None, first_name: Optional[str] = None):
-    """Broadcast: new user onboarding"""
     try:
         masked = mask_username(username, first_name)
         msg = _build_event_message('onboarding', masked, _ONBOARDING_MESSAGES)
@@ -309,7 +347,6 @@ async def notify_wallet_deposit(
     first_name: Optional[str] = None,
     amount_usd: float = 0.0
 ):
-    """Broadcast: wallet top-up"""
     try:
         masked = mask_username(username, first_name)
         detail = f"💲 <b>${amount_usd:.2f}</b> deposited" if amount_usd > 0 else None
@@ -324,10 +361,8 @@ async def notify_domain_purchase(
     first_name: Optional[str] = None,
     domain_name: Optional[str] = None
 ):
-    """Broadcast: domain registration"""
     try:
         masked = mask_username(username, first_name)
-        # Partially mask domain too: show TLD but mask most of the name
         detail = None
         if domain_name:
             parts = domain_name.split('.')
@@ -353,7 +388,6 @@ async def notify_hosting_purchase(
     domain_name: Optional[str] = None,
     plan_name: Optional[str] = None
 ):
-    """Broadcast: hosting purchase"""
     try:
         masked = mask_username(username, first_name)
         detail = None
@@ -380,7 +414,6 @@ async def notify_rdp_purchase(
     first_name: Optional[str] = None,
     plan_name: Optional[str] = None
 ):
-    """Broadcast: RDP/VPS server purchase"""
     try:
         masked = mask_username(username, first_name)
         detail = None
