@@ -510,26 +510,27 @@ async def lifespan(app: FastAPI):
             handle_admin_broadcast_text, handle_admin_credit_text
         )
         
-        # Add command handlers
-        bot_app.add_handler(CommandHandler("start", start_command))
-        bot_app.add_handler(CommandHandler("search", search_command))
-        bot_app.add_handler(CommandHandler("domain", domain_command))
-        bot_app.add_handler(CommandHandler("domains", domain_command))  # Alias for /domain
-        bot_app.add_handler(CommandHandler("dns", dns_command))
-        bot_app.add_handler(CommandHandler("wallet", wallet_command))
-        bot_app.add_handler(CommandHandler("profile", profile_command))
-        bot_app.add_handler(CommandHandler("hosting", hosting_command))
-        bot_app.add_handler(CommandHandler("language", language_command))
+        # Add command handlers - PRIVATE CHAT ONLY to prevent group spam
+        private_filter = filters.ChatType.PRIVATE
+        bot_app.add_handler(CommandHandler("start", start_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("search", search_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("domain", domain_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("domains", domain_command, filters=private_filter))  # Alias for /domain
+        bot_app.add_handler(CommandHandler("dns", dns_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("wallet", wallet_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("profile", profile_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("hosting", hosting_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("language", language_command, filters=private_filter))
         
-        # Admin commands
-        bot_app.add_handler(CommandHandler("broadcast", broadcast_command))
-        bot_app.add_handler(CommandHandler("cancel", cancel_command))
-        bot_app.add_handler(CommandHandler("maintenance", maintenance_command))
+        # Admin commands - PRIVATE CHAT ONLY
+        bot_app.add_handler(CommandHandler("broadcast", broadcast_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("cancel", cancel_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("maintenance", maintenance_command, filters=private_filter))
         
-        # Promo opt-out/opt-in and timezone commands
-        bot_app.add_handler(CommandHandler("stop_promos", stop_promos_command))
-        bot_app.add_handler(CommandHandler("start_promos", start_promos_command))
-        bot_app.add_handler(CommandHandler("set_timezone", set_timezone_command))
+        # Promo opt-out/opt-in and timezone commands - PRIVATE CHAT ONLY
+        bot_app.add_handler(CommandHandler("stop_promos", stop_promos_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("start_promos", start_promos_command, filters=private_filter))
+        bot_app.add_handler(CommandHandler("set_timezone", set_timezone_command, filters=private_filter))
         
         # Callback and message handlers
         bot_app.add_handler(CallbackQueryHandler(handle_callback))
@@ -539,10 +540,10 @@ async def lifespan(app: FastAPI):
         from group_notifications import handle_my_chat_member, set_bot_reference
         bot_app.add_handler(ChatMemberHandler(handle_my_chat_member, ChatMemberHandler.MY_CHAT_MEMBER))
         
-        # CRITICAL: Add admin message handlers with proper priority groups (must match bot.py)
-        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_credit_text), group=-2)
-        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_broadcast_text), group=-1)
-        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message), group=0)
+        # CRITICAL: Add admin message handlers with proper priority groups - PRIVATE CHAT ONLY
+        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_admin_credit_text), group=-2)
+        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_admin_broadcast_text), group=-1)
+        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_text_message), group=0)
         
         # Add global error handler to prevent "No error handlers registered" errors
         async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:

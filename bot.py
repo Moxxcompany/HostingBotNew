@@ -449,26 +449,27 @@ async def main_bot_loop():
         except Exception as renewal_integration_error:
             logger.warning(f"⚠️ Renewal processor integration failed: {renewal_integration_error}")
         
-        # Add command handlers
-        app.add_handler(CommandHandler("start", start_command))
-        app.add_handler(CommandHandler("domain", domain_command))
-        app.add_handler(CommandHandler("domains", domain_command))  # Alias for /domain
-        app.add_handler(CommandHandler("dns", dns_command))
-        app.add_handler(CommandHandler("wallet", wallet_command))
-        app.add_handler(CommandHandler("broadcast", broadcast_command))
-        app.add_handler(CommandHandler("cancel", cancel_command))
-        app.add_handler(CommandHandler("maintenance", maintenance_command))
-        app.add_handler(CommandHandler("search", search_command))
-        app.add_handler(CommandHandler("profile", profile_command))
-        app.add_handler(CommandHandler("hosting", hosting_command))
-        app.add_handler(CommandHandler("language", language_command))
-        app.add_handler(CommandHandler("link", link_domain_command))
-        app.add_handler(CommandHandler("renew", renew_hosting_command))
+        # Add command handlers - PRIVATE CHAT ONLY to prevent group spam
+        private_filter = filters.ChatType.PRIVATE
+        app.add_handler(CommandHandler("start", start_command, filters=private_filter))
+        app.add_handler(CommandHandler("domain", domain_command, filters=private_filter))
+        app.add_handler(CommandHandler("domains", domain_command, filters=private_filter))  # Alias for /domain
+        app.add_handler(CommandHandler("dns", dns_command, filters=private_filter))
+        app.add_handler(CommandHandler("wallet", wallet_command, filters=private_filter))
+        app.add_handler(CommandHandler("broadcast", broadcast_command, filters=private_filter))
+        app.add_handler(CommandHandler("cancel", cancel_command, filters=private_filter))
+        app.add_handler(CommandHandler("maintenance", maintenance_command, filters=private_filter))
+        app.add_handler(CommandHandler("search", search_command, filters=private_filter))
+        app.add_handler(CommandHandler("profile", profile_command, filters=private_filter))
+        app.add_handler(CommandHandler("hosting", hosting_command, filters=private_filter))
+        app.add_handler(CommandHandler("language", language_command, filters=private_filter))
+        app.add_handler(CommandHandler("link", link_domain_command, filters=private_filter))
+        app.add_handler(CommandHandler("renew", renew_hosting_command, filters=private_filter))
         
-        # Promo opt-out/opt-in and timezone commands
-        app.add_handler(CommandHandler("stop_promos", stop_promos_command))
-        app.add_handler(CommandHandler("start_promos", start_promos_command))
-        app.add_handler(CommandHandler("set_timezone", set_timezone_command))
+        # Promo opt-out/opt-in and timezone commands - PRIVATE CHAT ONLY
+        app.add_handler(CommandHandler("stop_promos", stop_promos_command, filters=private_filter))
+        app.add_handler(CommandHandler("start_promos", start_promos_command, filters=private_filter))
+        app.add_handler(CommandHandler("set_timezone", set_timezone_command, filters=private_filter))
         
         # Add callback query handler for all inline keyboard interactions
         app.add_handler(CallbackQueryHandler(handle_callback))
@@ -478,11 +479,11 @@ async def main_bot_loop():
         from group_notifications import handle_my_chat_member
         app.add_handler(ChatMemberHandler(handle_my_chat_member, ChatMemberHandler.MY_CHAT_MEMBER))
         
-        # Add message handlers with priority groups
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_credit_text), group=-2)
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_broadcast_text), group=-1)
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_domain_linking_text_input), group=0)
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message), group=1)
+        # Add message handlers with priority groups - PRIVATE CHAT ONLY to prevent group spam
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_admin_credit_text), group=-2)
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_admin_broadcast_text), group=-1)
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_domain_linking_text_input), group=0)
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private_filter, handle_text_message), group=1)
         
         logger.info("✅ All command handlers registered in main event loop")
         
