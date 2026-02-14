@@ -2353,6 +2353,19 @@ async def _process_rdp_payment(order_id: str, payment_details: Dict[str, Any]):
                         _bot_loop
                     )
                     logger.info(f"✅ RDP server provisioning started for order {order_db_id}")
+                    
+                    # GROUP NOTIFICATION: Broadcast RDP purchase to registered groups
+                    try:
+                        from group_notifications import notify_rdp_purchase
+                        user_info_result = await execute_query(
+                            "SELECT username, first_name FROM users WHERE id = %s", (user_id,)
+                        )
+                        u_name = user_info_result[0].get('username') if user_info_result else None
+                        f_name = user_info_result[0].get('first_name') if user_info_result else None
+                        plan_label = metadata.get('plan_label', metadata.get('plan_id', 'Windows VPS'))
+                        asyncio.create_task(notify_rdp_purchase(username=u_name, first_name=f_name, plan_name=plan_label))
+                    except Exception as grp_err:
+                        logger.warning(f"Group notification (rdp) failed: {grp_err}")
                 else:
                     logger.error(f"❌ Could not find telegram_id for user_id {user_id}")
                     
