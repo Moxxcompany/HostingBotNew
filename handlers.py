@@ -4988,6 +4988,15 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error("Missing callback query in handle_callback")
         return
     
+    # GROUP GUARD: Silently ignore callback queries from groups/supergroups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        try:
+            await query.answer()
+        except Exception:
+            pass
+        return
+    
     # USER INTERACTION LOG: Enhanced logging for anomaly detection
     user = query.from_user
     logger.info(f"🖱️ USER_ACTIVITY: Button click from user {user.id if user else 'unknown'} (@{user.username if user else 'no_username'}) - action: {query.data}")
@@ -12744,6 +12753,11 @@ async def continue_mx_record_wizard(query, context, wizard_state):
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle all text messages (unified handler for domain search, registration, etc.)"""
+    # GROUP GUARD: Silently ignore text messages from groups/supergroups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        return
+    
     user = update.effective_user
     effective_message = update.effective_message
     
