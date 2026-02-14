@@ -17302,6 +17302,18 @@ async def process_hosting_wallet_payment(query, subscription_id: str, price: str
             )
             logger.info(f"✅ REVENUE PROTECTION: Hosting subscription {subscription_id} completed with successful wallet charge")
             
+            # GROUP NOTIFICATION: Broadcast hosting wallet purchase to groups
+            try:
+                from group_notifications import notify_hosting_purchase
+                asyncio.create_task(notify_hosting_purchase(
+                    username=user.username,
+                    first_name=user.first_name,
+                    domain_name=subscription['domain_name'],
+                    plan_name=subscription.get('plan_name')
+                ))
+            except Exception as grp_err:
+                logger.warning(f"Group notification (hosting wallet) failed: {grp_err}")
+            
             # Success message
             message = f"""{t('hosting.wallet_payment.success_title', user_lang)}
 
