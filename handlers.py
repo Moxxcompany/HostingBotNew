@@ -4834,6 +4834,11 @@ async def show_domain_linking_help(query, user_lang: str):
 
 async def handle_domain_linking_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle text input for domain linking process"""
+    # GROUP GUARD: Silently ignore messages from groups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        return
+    
     user = update.effective_user
     message = update.effective_message
     

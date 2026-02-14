@@ -855,6 +855,11 @@ async def handle_admin_broadcast_text(update: Update, context: ContextTypes.DEFA
     High-priority text handler for admin broadcast messages.
     Only processes messages when admin is in broadcast mode.
     """
+    # GROUP GUARD: Silently ignore messages from groups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        return False
+    
     user = update.effective_user
     message = update.effective_message
     
@@ -920,6 +925,11 @@ async def handle_admin_credit_text(update: Update, context: ContextTypes.DEFAULT
     High-priority text handler for admin credit wallet workflow.
     Only processes messages when admin is in credit mode.
     """
+    # GROUP GUARD: Silently ignore messages from groups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        return False
+    
     user = update.effective_user
     message = update.effective_message
     
