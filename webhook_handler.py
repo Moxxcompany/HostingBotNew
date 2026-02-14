@@ -1728,6 +1728,16 @@ async def _process_domain_payment(order_id: str, payment_details: Dict[str, Any]
                 from services.job_queue_signals import signal_domain_registration_job
                 signal_domain_registration_job()
                 logger.info(f"✅ Domain registration queued as job #{job_id} for {domain_name} - webhook returning immediately")
+                
+                # GROUP NOTIFICATION: Broadcast domain purchase to registered groups
+                try:
+                    from group_notifications import notify_domain_purchase
+                    user_info_result = await execute_query("SELECT username, first_name FROM users WHERE id = %s", (user_id,))
+                    u_name = user_info_result[0].get('username') if user_info_result else None
+                    f_name = user_info_result[0].get('first_name') if user_info_result else None
+                    asyncio.create_task(notify_domain_purchase(username=u_name, first_name=f_name, domain_name=domain_name))
+                except Exception as grp_err:
+                    logger.warning(f"Group notification (domain) failed: {grp_err}")
             else:
                 logger.error(f"❌ Failed to queue domain registration for {order_id} - falling back to sync")
                 # Fallback to synchronous processing if queue fails
