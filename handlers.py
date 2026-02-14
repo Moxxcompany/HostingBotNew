@@ -7651,6 +7651,17 @@ There was an error reserving funds from your wallet. Please try again or contact
                     # Success path - both hosting and payment worked
                     logger.info(f"✅ REVENUE PROTECTION: Unified hosting subscription {subscription_id} completed with successful wallet charge")
                     
+                    # GROUP NOTIFICATION: Broadcast wallet hosting purchase to groups
+                    try:
+                        from group_notifications import notify_hosting_purchase
+                        asyncio.create_task(notify_hosting_purchase(
+                            username=user.username,
+                            first_name=user.first_name,
+                            domain_name=domain_name
+                        ))
+                    except Exception as grp_err:
+                        logger.warning(f"Group notification (wallet hosting) failed: {grp_err}")
+                    
                     message = f"""
 {t('hosting.wallet_payment.success_title', user_lang)}
 
