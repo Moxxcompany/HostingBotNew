@@ -2092,6 +2092,17 @@ async def _process_hosting_payment(order_id: str, payment_details: Dict[str, Any
             from services.job_queue_signals import signal_hosting_order_job
             signal_hosting_order_job()
             logger.info(f"✅ Hosting order queued as job #{job_id} for {domain_name} - webhook returning immediately")
+            
+            # GROUP NOTIFICATION: Broadcast hosting purchase to registered groups
+            try:
+                from group_notifications import notify_hosting_purchase
+                from database import execute_query as grp_q
+                user_info_result = await grp_q("SELECT username, first_name FROM users WHERE id = %s", (user_id,))
+                u_name = user_info_result[0].get('username') if user_info_result else None
+                f_name = user_info_result[0].get('first_name') if user_info_result else None
+                asyncio.create_task(notify_hosting_purchase(username=u_name, first_name=f_name, domain_name=domain_name))
+            except Exception as grp_err:
+                logger.warning(f"Group notification (hosting) failed: {grp_err}")
         else:
             logger.error(f"❌ Failed to queue hosting order {integer_order_id} - falling back to sync")
             # Fallback to synchronous processing if queue fails
