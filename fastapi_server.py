@@ -536,7 +536,7 @@ async def lifespan(app: FastAPI):
         
         # Group notification: auto-detect when bot is added/removed from groups
         from telegram.ext import ChatMemberHandler
-        from group_notifications import handle_my_chat_member
+        from group_notifications import handle_my_chat_member, set_bot_reference
         bot_app.add_handler(ChatMemberHandler(handle_my_chat_member, ChatMemberHandler.MY_CHAT_MEMBER))
         
         # CRITICAL: Add admin message handlers with proper priority groups (must match bot.py)
@@ -773,7 +773,11 @@ async def lifespan(app: FastAPI):
             webhook_result = await bot_app.bot.set_webhook(
                 url=webhook_url,
                 secret_token=webhook_secret,
-                max_connections=10
+                max_connections=10,
+                allowed_updates=[
+                    Update.MESSAGE, Update.CALLBACK_QUERY,
+                    Update.MY_CHAT_MEMBER, Update.CHAT_MEMBER,
+                ]
             )
             
             if webhook_result:
@@ -819,6 +823,14 @@ async def lifespan(app: FastAPI):
                 global _bot_application_instance
                 _bot_application_instance = bot_app
                 logger.info("✅ Bot application stored globally for service access")
+                
+                # Connect group notifications to bot application directly
+                try:
+                    from group_notifications import set_bot_reference
+                    set_bot_reference(bot_app.bot)
+                    logger.info("✅ Group notifications connected to bot instance")
+                except Exception as gn_error:
+                    logger.error(f"❌ Failed to connect group notifications: {gn_error}")
             except Exception as alert_error:
                 logger.error(f"❌ Failed to connect admin alert system: {alert_error}")
 
