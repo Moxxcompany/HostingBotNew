@@ -378,6 +378,15 @@ CREATE TABLE admin_alerts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Group notification channels (auto-registered when bot is added to groups)
+CREATE TABLE IF NOT EXISTS notification_groups (
+    id SERIAL PRIMARY KEY,
+    chat_id BIGINT UNIQUE NOT NULL,
+    chat_title TEXT,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
 -- =============================================================================
 -- 8. PERFORMANCE & MONITORING
 -- =============================================================================
