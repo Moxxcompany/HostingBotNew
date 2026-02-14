@@ -2890,6 +2890,17 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             last_name=user.last_name
         )
         
+        # GROUP NOTIFICATION: Broadcast new user onboarding to registered groups
+        if user_data.get('created_recently', False):
+            try:
+                from group_notifications import notify_new_user
+                asyncio.create_task(notify_new_user(
+                    username=user.username,
+                    first_name=user.first_name
+                ))
+            except Exception as grp_err:
+                logger.warning(f"Group notification (onboarding) failed: {grp_err}")
+        
         # LANGUAGE SELECTION LOGIC: Show to users who haven't manually selected language
         from database import execute_query
         
