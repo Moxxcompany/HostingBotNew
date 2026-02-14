@@ -3731,6 +3731,18 @@ async def init_database():
                     logger.error(f"❌ SEQUENCE SYNC ERROR: {seq_sync_error}")
                     # Don't fail initialization, just log the error
                 
+                # Notification groups table (for group event broadcasts)
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS notification_groups (
+                        id SERIAL PRIMARY KEY,
+                        chat_id BIGINT UNIQUE NOT NULL,
+                        chat_title TEXT,
+                        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        is_active BOOLEAN DEFAULT TRUE
+                    )
+                """)
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_notification_groups_active ON notification_groups(is_active) WHERE is_active = TRUE")
+                
                 conn.commit()
                 logger.info("✅ Database tables initialized successfully")
         finally:
