@@ -7980,6 +7980,17 @@ async def process_intent_wallet_payment(query, intent_id: str, price: str):
             elif orchestrator_result.get('success'):
                 logger.info(f"✅ HANDLERS: Hosting bundle completed via orchestrator: intent {intent_id}")
                 # Orchestrator already sent success notification with buttons
+                
+                # GROUP NOTIFICATION: Broadcast intent hosting purchase to groups
+                try:
+                    from group_notifications import notify_hosting_purchase
+                    asyncio.create_task(notify_hosting_purchase(
+                        username=user.username,
+                        first_name=user.first_name,
+                        domain_name=intent.get('domain_name', '')
+                    ))
+                except Exception as grp_err:
+                    logger.warning(f"Group notification (intent hosting) failed: {grp_err}")
             else:
                 logger.warning(f"⚠️ HANDLERS: Unexpected orchestrator result for intent {intent_id}: {orchestrator_result}")
                 await safe_edit_message(query, f"⚠️ Order Status Unknown\n\nPlease check your hosting dashboard.")
