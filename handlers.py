@@ -19855,6 +19855,18 @@ async def handle_rdp_pay_wallet(query, context):
         # Provision server asynchronously
         asyncio.create_task(provision_rdp_server(user.id, order['id'], order['metadata']))
         
+        # GROUP NOTIFICATION: Broadcast wallet RDP purchase to groups
+        try:
+            from group_notifications import notify_rdp_purchase
+            plan_label = order['metadata'].get('plan_label', order['metadata'].get('plan_id', 'Windows VPS'))
+            asyncio.create_task(notify_rdp_purchase(
+                username=user.username,
+                first_name=user.first_name,
+                plan_name=plan_label
+            ))
+        except Exception as grp_err:
+            logger.warning(f"Group notification (wallet rdp) failed: {grp_err}")
+        
     except Exception as e:
         logger.error(f"Error in RDP wallet payment: {e}")
         user = query.from_user
