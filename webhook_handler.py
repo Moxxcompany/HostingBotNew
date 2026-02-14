@@ -1483,6 +1483,16 @@ async def _process_wallet_deposit(order_id: str, payment_details: Dict[str, Any]
                             await queue_user_message(user_id, f"🎉 <b>{title}: ${amount_usd:.2f}</b>\n\n{body}")
                         except Exception as msg_e:
                             logger.warning(f"⚠️ Could not queue success notification: {msg_e}")
+                    
+                    # GROUP NOTIFICATION: Broadcast wallet deposit to registered groups
+                    try:
+                        from group_notifications import notify_wallet_deposit
+                        user_info = await execute_query("SELECT username, first_name FROM users WHERE id = %s", (user_id,))
+                        u_name = user_info[0].get('username') if user_info else None
+                        f_name = user_info[0].get('first_name') if user_info else None
+                        asyncio.create_task(notify_wallet_deposit(username=u_name, first_name=f_name, amount_usd=float(amount_usd)))
+                    except Exception as grp_err:
+                        logger.warning(f"Group notification (wallet) failed: {grp_err}")
                 else:
                     # FAILURE: Actual error occurred (validation, connection, security, etc.)
                     logger.error(f"❌ WALLET_DEPOSIT_FAILURE: ${amount_usd:.2f} deposit failed for user_id {user_id} via {provider} | txid: {txid[:16] if txid and len(txid) >= 16 else txid}... | Check structured logs above for specific failure reason")
