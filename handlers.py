@@ -2854,6 +2854,11 @@ cpanel = CPanelService()
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command with terms acceptance check and routing"""
+    # GROUP GUARD: Silently ignore /start in groups
+    chat = update.effective_chat
+    if chat and chat.type in ('group', 'supergroup'):
+        return
+    
     user = update.effective_user
     message = update.effective_message
     
