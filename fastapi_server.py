@@ -774,10 +774,7 @@ async def lifespan(app: FastAPI):
                 url=webhook_url,
                 secret_token=webhook_secret,
                 max_connections=10,
-                allowed_updates=[
-                    Update.MESSAGE, Update.CALLBACK_QUERY,
-                    Update.MY_CHAT_MEMBER, Update.CHAT_MEMBER,
-                ]
+                allowed_updates=["message", "callback_query", "my_chat_member", "chat_member"]
             )
             
             if webhook_result:
