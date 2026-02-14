@@ -534,6 +534,11 @@ async def lifespan(app: FastAPI):
         # Callback and message handlers
         bot_app.add_handler(CallbackQueryHandler(handle_callback))
         
+        # Group notification: auto-detect when bot is added/removed from groups
+        from telegram.ext import ChatMemberHandler
+        from group_notifications import handle_my_chat_member
+        bot_app.add_handler(ChatMemberHandler(handle_my_chat_member, ChatMemberHandler.MY_CHAT_MEMBER))
+        
         # CRITICAL: Add admin message handlers with proper priority groups (must match bot.py)
         bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_credit_text), group=-2)
         bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_broadcast_text), group=-1)
@@ -606,6 +611,14 @@ async def lifespan(app: FastAPI):
                 await asyncio.wait_for(bot_app.start(), timeout=BOT_INIT_TIMEOUT)
                 logger.info("✅ Bot application initialized and started successfully")
                 _service_status['bot'] = True
+                # Set bot username for group notifications
+                try:
+                    from group_notifications import set_bot_username
+                    bot_info = await bot_app.bot.get_me()
+                    if bot_info and bot_info.username:
+                        set_bot_username(bot_info.username)
+                except Exception as username_err:
+                    logger.warning(f"Could not set bot username for group notifications: {username_err}")
                 break  # Success - exit retry loop
             except asyncio.TimeoutError:
                 logger.warning(f"⏱️ Bot initialization timeout on attempt {attempt}/{MAX_INIT_RETRIES}")
