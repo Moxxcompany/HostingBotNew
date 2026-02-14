@@ -82,7 +82,7 @@ def mask_username(username: Optional[str], first_name: Optional[str] = None) -> 
         return f"@{visible}{'*' * max(3, len(clean) - 2)}"
     if first_name:
         if len(first_name) <= 2:
-            return f"{first_name[0]}***"
+            return f"{first_name}***"
         return f"{first_name[:2]}{'*' * max(3, len(first_name) - 2)}"
     return "Someone"
 
