@@ -453,14 +453,16 @@ async def _run_redirect_mode_lifespan():
         from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, Defaults, ContextTypes
         
         REDIRECT_TEXT = (
-            "<b>We've Upgraded!</b>\n\n"
-            "Hostbay has moved to a faster, better home.\n\n"
-            "All your domains, hosting, wallet &amp; support\n"
-            "are now live on our new bot.\n\n"
-            "Tap below to continue where you left off."
+            "Hey! We moved — and leveled up.\n\n"
+            "@Nomadlybot now has:\n"
+            "☁️ Cloud Phone  •  📞 SIP &amp; OTP Calls\n"
+            "⚡ Quick &amp; Batch IVR  •  and more\n\n"
+            "Your domains, hosting &amp; wallet are\n"
+            "already there waiting for you.\n\n"
+            "Don't get left behind 👇"
         )
         REDIRECT_KEYBOARD = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Continue on @Nomadlybot", url="https://t.me/Nomadlybot")]
+            [InlineKeyboardButton("➡️ Open @Nomadlybot", url="https://t.me/Nomadlybot")]
         ])
         
         async def redirect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
