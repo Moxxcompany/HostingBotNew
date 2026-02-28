@@ -429,11 +429,118 @@ async def run_with_timeout(coro, timeout_seconds: float, task_name: str, default
         logger.warning(f"⚠️ {task_name} failed: {e}")
         return default
 
+# ========================================================================
+# REDIRECT MODE: Ultra-lightweight bot that redirects users to @Nomadlybot
+# Activated by REDIRECT_MODE=true in .env
+# Zero database, zero scheduler, zero services — near-zero Railway cost
+# ========================================================================
+async def _run_redirect_mode_lifespan():
+    """Minimal lifespan for redirect-only mode — no services, no DB, no scheduler"""
+    global bot_app, _service_status, _bot_ready_event
+    
+    logger.info("=" * 60)
+    logger.info("REDIRECT MODE — Lightweight redirect bot active")
+    logger.info("=" * 60)
+    
+    token = os.getenv('TELEGRAM_BOT_TOKEN', '')
+    if not token:
+        logger.error("TELEGRAM_BOT_TOKEN missing — cannot start redirect bot")
+        yield
+        return
+    
+    try:
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+        from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, Defaults, ContextTypes
+        
+        REDIRECT_TEXT = (
+            "<b>We've Upgraded!</b>\n\n"
+            "Hostbay has moved to a faster, better home.\n\n"
+            "All your domains, hosting, wallet &amp; support\n"
+            "are now live on our new bot.\n\n"
+            "Tap below to continue where you left off."
+        )
+        REDIRECT_KEYBOARD = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Continue on @Nomadlybot", url="https://t.me/Nomadlybot")]
+        ])
+        
+        async def redirect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            """Reply to any command or message with the redirect"""
+            msg = update.effective_message
+            if msg:
+                await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+        
+        async def redirect_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            """Handle any leftover inline keyboard callbacks"""
+            query = update.callback_query
+            if query:
+                await query.answer()
+                await query.message.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+        
+        defaults = Defaults(parse_mode='HTML')
+        bot_app = Application.builder().token(token).defaults(defaults).build()
+        
+        private = filters.ChatType.PRIVATE
+        bot_app.add_handler(CommandHandler("start", redirect_handler, filters=private))
+        bot_app.add_handler(MessageHandler(filters.ALL & private, redirect_handler))
+        bot_app.add_handler(CallbackQueryHandler(redirect_callback))
+        
+        await bot_app.initialize()
+        await bot_app.start()
+        logger.info("Redirect bot initialized")
+        
+        # Register webhook
+        from utils.environment import get_webhook_url
+        webhook_url = get_webhook_url('telegram')
+        webhook_secret = os.getenv('TELEGRAM_WEBHOOK_SECRET_TOKEN', '')
+        
+        result = await bot_app.bot.set_webhook(
+            url=webhook_url,
+            secret_token=webhook_secret,
+            max_connections=5,
+            allowed_updates=["message", "callback_query"]
+        )
+        if result:
+            logger.info(f"Webhook registered: {webhook_url}")
+        
+        _bot_ready_event = asyncio.Event()
+        _bot_ready_event.set()
+        
+        _service_status = {
+            'bot': True, 'webhook': True, 'database': False,
+            'scheduler': False, 'payment_cleanup': False,
+            'language_system': False, 'message_queue': False
+        }
+        
+        logger.info("REDIRECT MODE READY — all messages redirect to @Nomadlybot")
+        logger.info("=" * 60)
+        
+    except Exception as e:
+        logger.error(f"Redirect mode init failed: {e}")
+        bot_app = None
+    
+    yield
+    
+    # Cleanup
+    if bot_app:
+        try:
+            await bot_app.stop()
+            await bot_app.shutdown()
+        except Exception:
+            pass
+    logger.info("Redirect bot stopped")
+
+
 # FastAPI lifecycle management
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage FastAPI lifecycle and bot integration - ALWAYS STARTS SUCCESSFULLY"""
     global bot_app, _service_status
+    
+    # REDIRECT MODE: If enabled, skip ALL heavy services
+    if os.getenv('REDIRECT_MODE', '').lower() == 'true':
+        async with asynccontextmanager(_run_redirect_mode_lifespan)() as value:
+            yield value
+        return
     
     # NOTE: FAST_STARTUP mode is deprecated - background initialization now handles fast startup
     # Heavy tasks run in background after server starts accepting requests
