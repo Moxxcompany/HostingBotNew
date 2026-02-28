@@ -452,6 +452,19 @@ async def _run_redirect_mode_lifespan():
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
         from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, Defaults, ContextTypes
         
+        # --- Admin detection (env-only, no DB) ---
+        _admin_ids = set()
+        for env_key in ('ADMIN_USER_IDS', 'ADMIN_USER_ID'):
+            raw = os.getenv(env_key, '')
+            for chunk in raw.split(','):
+                chunk = chunk.strip()
+                if chunk.isdigit():
+                    _admin_ids.add(int(chunk))
+        
+        def _is_admin(user_id: int) -> bool:
+            return user_id in _admin_ids
+        
+        # --- Redirect message for regular users ---
         REDIRECT_TEXT = (
             "Hey! We moved — and leveled up.\n\n"
             "@Nomadlybot now has:\n"
@@ -465,10 +478,158 @@ async def _run_redirect_mode_lifespan():
             [InlineKeyboardButton("➡️ Open @Nomadlybot", url="https://t.me/Nomadlybot")]
         ])
         
-        async def redirect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-            """Reply to any command or message with the redirect"""
+        # --- Admin: /broadcast <message> (needs DB for user list) ---
+        async def admin_broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            user = update.effective_user
             msg = update.effective_message
-            if msg:
+            if not user or not msg:
+                return
+            if not _is_admin(user.id):
+                await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+                return
+            
+            text = ' '.join(context.args) if context.args else ''
+            if not text.strip():
+                # No args — enter broadcast mode (next text message will be the broadcast)
+                context.user_data['awaiting_broadcast'] = True
+                await msg.reply_text(
+                    "<b>Broadcast Mode</b>\n\n"
+                    "Type your message below and it will be sent to all users.\n\n"
+                    "Send /cancel to exit.",
+                    parse_mode='HTML'
+                )
+                return
+            
+            await _do_broadcast(msg, text, user)
+        
+        async def _do_broadcast(reply_to, text, admin_user):
+            """Execute broadcast to all users via database"""
+            try:
+                from database import execute_query
+                
+                users = await execute_query(
+                    "SELECT telegram_id FROM users WHERE terms_accepted = true ORDER BY id"
+                )
+                if not users:
+                    await reply_to.reply_text("No users found in database.")
+                    return
+                
+                total = len(users)
+                status_msg = await reply_to.reply_text(f"Broadcasting to {total} users...")
+                
+                sent = 0
+                failed = 0
+                for u in users:
+                    tid = u['telegram_id']
+                    if tid in _admin_ids:
+                        continue
+                    try:
+                        await bot_app.bot.send_message(
+                            chat_id=tid,
+                            text=f"<b>📢 Broadcast</b>\n\n{text}",
+                            parse_mode='HTML'
+                        )
+                        sent += 1
+                    except Exception:
+                        failed += 1
+                    if sent % 30 == 0 and sent > 0:
+                        await asyncio.sleep(1)
+                
+                await status_msg.edit_text(
+                    f"<b>Broadcast Complete</b>\n\n"
+                    f"Sent: {sent}\n"
+                    f"Failed: {failed}\n"
+                    f"Total: {total}",
+                    parse_mode='HTML'
+                )
+                logger.info(f"BROADCAST: Admin {admin_user.id} sent to {sent}/{total} users")
+                
+            except ImportError:
+                await reply_to.reply_text("Database module not available. Broadcast requires DB.")
+            except Exception as e:
+                logger.error(f"Broadcast error: {e}")
+                await reply_to.reply_text(f"Broadcast failed: {str(e)[:200]}")
+        
+        # --- Admin: /send <telegram_id> <message> (no DB needed) ---
+        async def admin_send_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            user = update.effective_user
+            msg = update.effective_message
+            if not user or not msg:
+                return
+            if not _is_admin(user.id):
+                await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+                return
+            
+            if not context.args or len(context.args) < 2:
+                await msg.reply_text(
+                    "<b>Usage:</b> /send &lt;telegram_id&gt; &lt;message&gt;\n\n"
+                    "Example: /send 123456789 Hello, your issue has been resolved!",
+                    parse_mode='HTML'
+                )
+                return
+            
+            try:
+                target_id = int(context.args[0])
+            except ValueError:
+                await msg.reply_text("Invalid Telegram ID. Must be a number.")
+                return
+            
+            text = ' '.join(context.args[1:])
+            try:
+                await bot_app.bot.send_message(
+                    chat_id=target_id,
+                    text=f"<b>📩 Message from Hostbay</b>\n\n{text}",
+                    parse_mode='HTML'
+                )
+                await msg.reply_text(f"Message sent to <code>{target_id}</code>", parse_mode='HTML')
+                logger.info(f"SEND: Admin {user.id} sent message to {target_id}")
+            except Exception as e:
+                await msg.reply_text(f"Failed to send: {str(e)[:200]}")
+        
+        # --- Admin: /cancel ---
+        async def admin_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            user = update.effective_user
+            msg = update.effective_message
+            if not user or not msg:
+                return
+            if not _is_admin(user.id):
+                await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+                return
+            if context.user_data and 'awaiting_broadcast' in context.user_data:
+                del context.user_data['awaiting_broadcast']
+            await msg.reply_text("Cancelled.")
+        
+        # --- Unified start/message handler ---
+        async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            user = update.effective_user
+            msg = update.effective_message
+            if not user or not msg:
+                return
+            if _is_admin(user.id):
+                await msg.reply_text(
+                    "<b>Admin Panel (Redirect Mode)</b>\n\n"
+                    "<b>Commands:</b>\n"
+                    "/broadcast — Send message to all users\n"
+                    "/send &lt;id&gt; &lt;msg&gt; — Message a specific user\n"
+                    "/cancel — Exit broadcast mode\n\n"
+                    "<i>All non-admin users see the redirect message.</i>",
+                    parse_mode='HTML'
+                )
+                return
+            await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
+        
+        async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            user = update.effective_user
+            msg = update.effective_message
+            if not user or not msg or not msg.text:
+                return
+            # Admin in broadcast mode — treat text as broadcast content
+            if _is_admin(user.id) and context.user_data and context.user_data.get('awaiting_broadcast'):
+                del context.user_data['awaiting_broadcast']
+                await _do_broadcast(msg, msg.text, user)
+                return
+            # Everyone else (including admin not in broadcast mode)
+            if not _is_admin(user.id):
                 await msg.reply_text(REDIRECT_TEXT, reply_markup=REDIRECT_KEYBOARD)
         
         async def redirect_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -482,8 +643,11 @@ async def _run_redirect_mode_lifespan():
         bot_app = Application.builder().token(token).defaults(defaults).build()
         
         private = filters.ChatType.PRIVATE
-        bot_app.add_handler(CommandHandler("start", redirect_handler, filters=private))
-        bot_app.add_handler(MessageHandler(filters.ALL & private, redirect_handler))
+        bot_app.add_handler(CommandHandler("start", start_handler, filters=private))
+        bot_app.add_handler(CommandHandler("broadcast", admin_broadcast_handler, filters=private))
+        bot_app.add_handler(CommandHandler("send", admin_send_handler, filters=private))
+        bot_app.add_handler(CommandHandler("cancel", admin_cancel_handler, filters=private))
+        bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & private, text_handler))
         bot_app.add_handler(CallbackQueryHandler(redirect_callback))
         
         await bot_app.initialize()
