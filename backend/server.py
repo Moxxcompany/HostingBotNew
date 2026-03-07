@@ -50,14 +50,16 @@ if os.getenv('REDIRECT_MODE', '').lower() == 'true':
         REDIRECT_TEXT = (
             "Hey! We moved \u2014 and leveled up.\n\n"
             "@Nomadlybot now has:\n"
-            "\u2601\ufe0f Cloud Phone  \u2022  \U0001f4de SIP &amp; OTP Calls\n"
-            "\u26a1 Quick &amp; Batch IVR  \u2022  and more\n\n"
+            "\u2601\ufe0f Cloud IVR  \u2022  \U0001f4de SIP &amp; OTP Calls\n"
+            "\u26a1 Quick &amp; Batch IVR  \u2022  \U0001f4ec Bozzmail\n\n"
+            "\U0001f195 Bozzmail: Print shipping labels, send letters &amp; postcards \u2014 all from your phone.\n\n"
             "Your domains, hosting &amp; wallet are\n"
             "already there waiting for you.\n\n"
             "Don\u2019t get left behind \U0001f447"
         )
         REDIRECT_KB = InlineKeyboardMarkup([
-            [InlineKeyboardButton("\u27a1\ufe0f Open @Nomadlybot", url="https://t.me/Nomadlybot")]
+            [InlineKeyboardButton("\u27a1\ufe0f Open @Nomadlybot", url="https://t.me/Nomadlybot")],
+            [InlineKeyboardButton("\U0001f4ec Bozzmail \u2014 Send Mail", url="https://bozzmail.com")]
         ])
 
         # --- Handlers ---

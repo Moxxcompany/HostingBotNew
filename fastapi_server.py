@@ -468,14 +468,16 @@ async def _run_redirect_mode_lifespan():
         REDIRECT_TEXT = (
             "Hey! We moved — and leveled up.\n\n"
             "@Nomadlybot now has:\n"
-            "☁️ Cloud Phone  •  📞 SIP &amp; OTP Calls\n"
-            "⚡ Quick &amp; Batch IVR  •  and more\n\n"
+            "☁️ Cloud IVR  •  📞 SIP &amp; OTP Calls\n"
+            "⚡ Quick &amp; Batch IVR  •  📬 Bozzmail\n\n"
+            "🆕 Bozzmail: Print shipping labels, send letters &amp; postcards — all from your phone.\n\n"
             "Your domains, hosting &amp; wallet are\n"
             "already there waiting for you.\n\n"
             "Don't get left behind 👇"
         )
         REDIRECT_KEYBOARD = InlineKeyboardMarkup([
-            [InlineKeyboardButton("➡️ Open @Nomadlybot", url="https://t.me/Nomadlybot")]
+            [InlineKeyboardButton("➡️ Open @Nomadlybot", url="https://t.me/Nomadlybot")],
+            [InlineKeyboardButton("📬 Bozzmail — Send Mail", url="https://bozzmail.com")]
         ])
         
         # --- Admin: /broadcast <message> (needs DB for user list) ---
