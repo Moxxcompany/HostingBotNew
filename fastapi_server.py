@@ -469,15 +469,18 @@ async def _run_redirect_mode_lifespan():
             "Hey! We moved — and leveled up.\n\n"
             "@Nomadlybot now has:\n"
             "☁️ Cloud IVR  •  📞 SIP &amp; OTP Calls\n"
-            "⚡ Quick &amp; Batch IVR  •  📬 Bozzmail\n\n"
-            "🆕 Bozzmail: Print shipping labels, send letters &amp; postcards — all from your phone.\n\n"
+            "⚡ Quick &amp; Batch IVR  •  📬 Bozzmail\n"
+            "💳 DynoPay — Crypto Payment Gateway\n\n"
+            "🆕 DynoPay: Accept BTC, ETH &amp; 15+ cryptos.\n"
+            "Get paid in USDT — 1.5% fees, zero chargebacks.\n\n"
             "Your domains, hosting &amp; wallet are\n"
             "already there waiting for you.\n\n"
             "Don't get left behind 👇"
         )
         REDIRECT_KEYBOARD = InlineKeyboardMarkup([
             [InlineKeyboardButton("➡️ Open @Nomadlybot", url="https://t.me/Nomadlybot")],
-            [InlineKeyboardButton("📬 Bozzmail — Send Mail", url="https://bozzmail.com")]
+            [InlineKeyboardButton("📬 Bozzmail — Send Mail", url="https://bozzmail.com")],
+            [InlineKeyboardButton("💳 DynoPay — Accept Crypto", url="https://dynopay.com")]
         ])
         
         # --- Admin: /broadcast <message> (needs DB for user list) ---
